@@ -15,6 +15,7 @@ import { ListingsPageView } from './components/ListingsPageView';
 import { BuilderPortalView } from './components/BuilderPortalView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { LiveChatDrawer } from './components/LiveChatDrawer';
+import ThemeToggle from './components/ui/ThemeToggle';
 import { 
   Building2, Sliders, Bell, User, Clock, Heart, ShieldAlert,
   Menu, X, Sparkles, LayoutDashboard, Compass, Layers, CheckCircle2, ChevronDown,
@@ -103,42 +104,49 @@ export default function App() {
 
   // Real-Time SSE listener connecting to full-stack Express engine
   useEffect(() => {
-    console.log("Establishing Real-Time Server SSE channel...");
-    const eventSource = new EventSource('/api/chat/stream');
+    let eventSource: EventSource;
+    try {
+      console.log("Establishing Real-Time Server SSE channel...");
+      eventSource = new EventSource('/api/chat/stream');
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'sync') {
-          setChatMessages(data.messages || []);
-          setChatInvitations(data.invitations || []);
-          setChatTypingStates(data.typingStates || []);
-        } else if (data.type === 'msg') {
-          setChatMessages((prev) => {
-            if (prev.some(m => m.id === data.message.id)) return prev;
-            return [...prev, data.message];
-          });
-        } else if (data.type === 'typing_sync') {
-          setChatTypingStates(data.typingStates || []);
-        } else if (data.type === 'invite') {
-          setChatInvitations((prev) => {
-            if (prev.some(i => i.id === data.invitation.id)) return prev;
-            return [...prev, data.invitation];
-          });
-          // Alert user or sync telemetry
-          addTelemetryLog(`[Real-Time Event] Online live inquiry room request registered for "${data.invitation.propertyTitle}" by ${data.invitation.customerName}.`);
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'sync') {
+            setChatMessages(data.messages || []);
+            setChatInvitations(data.invitations || []);
+            setChatTypingStates(data.typingStates || []);
+          } else if (data.type === 'msg') {
+            setChatMessages((prev) => {
+              if (prev.some(m => m.id === data.message.id)) return prev;
+              return [...prev, data.message];
+            });
+          } else if (data.type === 'typing_sync') {
+            setChatTypingStates(data.typingStates || []);
+          } else if (data.type === 'invite') {
+            setChatInvitations((prev) => {
+              if (prev.some(i => i.id === data.invitation.id)) return prev;
+              return [...prev, data.invitation];
+            });
+            // Alert user or sync telemetry
+            addTelemetryLog(`[Real-Time Event] Online live inquiry room request registered for "${data.invitation.propertyTitle}" by ${data.invitation.customerName}.`);
+          }
+        } catch (err) {
+          console.error("Failed to parse SSE event payload:", err);
         }
-      } catch (err) {
-        console.error("Failed to parse SSE event payload:", err);
-      }
-    };
+      };
 
-    eventSource.onerror = (err) => {
-      console.warn("Realtime EventSource channel reconnecting...", err);
-    };
+      eventSource.onerror = (err) => {
+        console.warn("Realtime EventSource channel reconnecting...", err);
+      };
+    } catch (e) {
+      console.error("Failed to initialize SSE connection:", e);
+    }
 
     return () => {
-      eventSource.close();
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, []);
 
@@ -366,6 +374,7 @@ export default function App() {
                 <span className="text-[9px] font-mono leading-none tracking-widest text-emerald-600 block uppercase font-bold">Hyderabad Portal</span>
               </div>
             </div>
+            <ThemeToggle />
 
              {/* Desktop Navigation Links (Dynamically isolated by selected user workspace role) */}
             <nav id="desktop-nav" className="hidden md:flex items-center gap-1.5">

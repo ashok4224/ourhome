@@ -74,6 +74,7 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ propertyPrice }) =
               step="5"
               value={downPaymentPercent}
               onChange={(e) => setDownPaymentPercent(Number(e.target.value))}
+              aria-label="Down Payment"
               className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
             />
             <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
@@ -97,6 +98,7 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ propertyPrice }) =
               step="0.1"
               value={interestRate}
               onChange={(e) => setInterestRate(Number(e.target.value))}
+              aria-label="Interest Rate"
               className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
             />
             <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
@@ -119,10 +121,8 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ propertyPrice }) =
               max="30"
               step="1"
               value={tenureYears}
-              onChange={(e) => setInterestRate(tenureYears => {
-                setTenureYears(Number(e.target.value));
-                return interestRate;
-              })}
+              onChange={(e) => setTenureYears(Number(e.target.value))}
+              aria-label="Loan Tenure"
               className="w-full h-1.5 bg-neutral-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
             />
             <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
@@ -139,7 +139,7 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ propertyPrice }) =
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-0.5 bg-white border border-neutral-100 p-3.5 rounded-xl">
               <span className="text-[10px] font-mono text-neutral-400 uppercase font-semibold">Monthly EMI</span>
-              <p className="text-lg font-bold text-neutral-900 font-display">{formatCurrency(monthlyEMI)}</p>
+              <p className="text-lg font-bold text-neutral-900 font-display" data-testid="monthly-emi">{formatCurrency(monthlyEMI)}</p>
             </div>
             <div className="space-y-0.5 bg-white border border-neutral-100 p-3.5 rounded-xl">
               <span className="text-[10px] font-mono text-neutral-400 uppercase font-semibold">Principal Loan</span>
@@ -185,4 +185,6 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ propertyPrice }) =
 
     </div>
   );
-};
+}
+export default EMICalculator;
+

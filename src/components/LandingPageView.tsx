@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { Property } from '../types';
 import { Search, Eye, Sparkles, Building, Key, Handshake, ShieldCheck, Heart, ArrowRight } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard';
+import { FilterDrawer } from '../components/FilterDrawer';
 
 interface LandingPageViewProps {
   properties: Property[];
@@ -24,6 +27,13 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
   savedIds,
   onToggleSave,
 }) => {
+  const [filteredProperties, setFilteredProperties] = React.useState<Property[]>(properties);
+  const [filterOpen, setFilterOpen] = React.useState<boolean>(false);
+
+  // Sync filtered list when original properties change
+  React.useEffect(() => {
+    setFilteredProperties(properties);
+  }, [properties]);
   const [searchQuery, setSearchQuery] = useState('');
   const [propertyType, setPropertyType] = useState<'Any' | 'Buy' | 'Rent'>('Any');
   const [subLocality, setSubLocality] = useState('');
@@ -115,6 +125,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             >
               Search
             </button>
+            {/* Filter Drawer Trigger */}
+            <button
+              type="button"
+              onClick={() => setFilterOpen(true)}
+              className="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium text-sm py-2 px-4 rounded-xl shadow"
+            >
+              Filters
+            </button>
           </form>
 
           {/* Quick Sublocalities Tag Links */}
@@ -143,11 +161,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {/* BUY CARD */}
-          <div 
-            id="cat-buy"
-            onClick={() => onNavigateToListings({ type: 'Buy' })}
-            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
-          >
+          <GlassCard id="cat-buy" onClick={() => onNavigateToListings({ type: 'Buy' })} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <Building className="w-5 h-5" />
             </div>
@@ -155,14 +169,10 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Buy Property</h3>
               <p className="text-xs text-neutral-500 mt-1">Acquire premier, vetted premium residential estates.</p>
             </div>
-          </div>
+          </GlassCard>
 
           {/* RENT CARD */}
-          <div 
-            id="cat-rent"
-            onClick={() => onNavigateToListings({ type: 'Rent' })}
-            className="group cursor-pointer bg-white border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
-          >
+          <GlassCard id="cat-rent" onClick={() => onNavigateToListings({ type: 'Rent' })} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
             <div className="p-3 bg-emerald-50 text-emerald-650 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
               <Key className="w-5 h-5" />
             </div>
@@ -170,14 +180,10 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-emerald-600 transition-colors">Rent Luxury</h3>
               <p className="text-xs text-neutral-500 mt-1">Lease exclusive smart urban flats and duplex suites.</p>
             </div>
-          </div>
+          </GlassCard>
 
           {/* SELL CARD (Directs to Builder/Owner Tab) */}
-          <div 
-            id="cat-sell"
-            onClick={() => onNavigateToTab('dashboard')}
-            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
-          >
+          <GlassCard id="cat-sell" onClick={() => onNavigateToTab('dashboard')} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <Handshake className="w-5 h-5" />
             </div>
@@ -185,16 +191,10 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Sell &amp; List</h3>
               <p className="text-xs text-neutral-500 mt-1">Market your property. Access builder listing tools.</p>
             </div>
-          </div>
+          </GlassCard>
 
           {/* SERVICES CARD */}
-          <div 
-            id="cat-services"
-            onClick={() => {
-              alert("OurHome Elite Services: Dynamic Interior Decorating, Handpicked Movers, Facility Auditing, and Smart Automation setups are currently available for pre-booking inside active property chats!");
-            }}
-            className="group cursor-pointer bg-white border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
-          >
+          <GlassCard id="cat-services" onClick={() => { alert("OurHome Elite Services: Dynamic Interior Decorating, Handpicked Movers, Facility Auditing, and Smart Automation setups are currently available for pre-booking inside active property chats!"); }} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
             <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
               <Sparkles className="w-5 h-5" />
             </div>
@@ -202,14 +202,10 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-emerald-600 transition-colors">Home Services</h3>
               <p className="text-xs text-neutral-500 mt-1">Premium moving, maintenance, and automation consulting.</p>
             </div>
-          </div>
+          </GlassCard>
 
           {/* CONTROL CENTER CARD */}
-          <div 
-            id="cat-admin"
-            onClick={() => onNavigateToTab('admin')}
-            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 col-span-2 lg:col-span-1"
-          >
+          <GlassCard id="cat-admin" onClick={() => onNavigateToTab('admin')} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 col-span-2 lg:col-span-1 glass-card">
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -217,7 +213,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Admin Panel</h3>
               <p className="text-xs text-neutral-500 mt-1">Audit verification requests &amp; supervise platform health.</p>
             </div>
-          </div>
+          </GlassCard>
         </div>
       </section>
 
@@ -238,7 +234,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredProperties.map((p) => {
+          {filteredProperties.map((p) => {
             const isSaved = savedIds.includes(p.id);
             return (
               <div 
