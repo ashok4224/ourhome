@@ -27,6 +27,17 @@ export interface Property {
   views: number;
   inquiries: number;
   featured?: boolean;
+  furnishing: 'Unfurnished' | 'Semi-Furnished' | 'Fully-Furnished';
+  possessionStatus: 'Ready to Move' | 'Under Construction';
+  reraId?: string;
+  latitude: number;
+  longitude: number;
+  proximityScores: {
+    metro: number;
+    workspace: number;
+    hospital: number;
+    school: number;
+  };
 }
 
 export interface Appointment {

@@ -740,6 +740,8 @@ export default function App() {
         typingStates={chatTypingStates}
         onSendMessage={handleSendMessage}
         onSendTyping={handleSendTyping}
+        properties={properties}
+        onSelectProperty={handleSelectProperty}
       />
 
     </div>

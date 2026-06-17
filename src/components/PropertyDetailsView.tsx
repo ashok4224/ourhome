@@ -258,6 +258,11 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
               <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 font-mono text-[10px] uppercase py-0.5 px-2 rounded-md font-bold">
                 RERA Vetted
               </span>
+              {property.reraId && (
+                <span className="bg-slate-900 border border-slate-800 text-slate-100 font-mono text-[10px] py-0.5 px-2 rounded-md font-semibold tracking-wider">
+                  TS-RERA: {property.reraId}
+                </span>
+              )}
             </div>
 
             <h1 className="font-display text-2xl md:text-4xl font-bold text-neutral-950 tracking-tight leading-none">
@@ -317,6 +322,44 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Neighborhood Proximity Section */}
+          {property.proximityScores && (
+            <div className="space-y-3">
+              <h3 className="font-display text-lg font-semibold text-neutral-950 border-b border-neutral-100 pb-2">Neighborhood Proximity & Connectivity</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">METRO ACCESS</span>
+                  <div>
+                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.metro} km</span>
+                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to station</span>
+                  </div>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">IT WORKSPACES</span>
+                  <div>
+                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.workspace} km</span>
+                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to IT Parks</span>
+                  </div>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">HEALTHCARE</span>
+                  <div>
+                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.hospital} km</span>
+                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to Hospital</span>
+                  </div>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">EDUCATION</span>
+                  <div>
+                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.school} km</span>
+                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to Schools</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div id="emi-calculator-panel" className="bg-white border border-neutral-200 p-6 md:p-8 rounded-3xl space-y-6 shadow-xs text-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 animate-fade-in">
               <div className="flex items-center gap-2">

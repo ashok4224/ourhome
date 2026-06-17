@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Property } from '../types';
+import { InteractiveMap } from './InteractiveMap';
 import { 
   Search, SlidersHorizontal, Grid, Map as MapIcon, 
   Bed, Square, Compass, Heart, Eye, ArrowRight, X, Sparkles,
@@ -34,6 +35,9 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
   const [subLocality, setSubLocality] = useState(initialFilters?.subLocality || 'Any');
   const [bhkCount, setBhkCount] = useState<number | 'Any'>('Any');
   const [maxPrice, setMaxPrice] = useState<number>(60000000); // Max 6 Crores
+  const [furnishing, setFurnishing] = useState<'Any' | 'Unfurnished' | 'Semi-Furnished' | 'Fully-Furnished'>('Any');
+  const [possession, setPossession] = useState<'Any' | 'Ready to Move' | 'Under Construction'>('Any');
+  const [facing, setFacing] = useState<'Any' | 'East' | 'West' | 'North' | 'South'>('Any');
 
   // Advanced Portal Toggles (Real Estate comparison models)
   const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -81,6 +85,15 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
         if (p.price > maxPrice) return false;
       }
 
+      // Furnishing filter
+      if (furnishing !== 'Any' && p.furnishing !== furnishing) return false;
+
+      // Possession filter
+      if (possession !== 'Any' && p.possessionStatus !== possession) return false;
+
+      // Facing filter
+      if (facing !== 'Any' && !p.facing.toLowerCase().includes(facing.toLowerCase())) return false;
+
       // Proportional verified filter (representing 99acres)
       // Gachibowli or Arjun-supported listings count as fully verified
       if (verifiedOnly && p.id !== 'prop-1' && p.id !== 'prop-2' && p.id !== 'prop-4' && !p.title.toLowerCase().includes('ashok')) {
@@ -123,7 +136,7 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
         return (b.views || 0) - (a.views || 0);
       }
     });
-  }, [properties, rentOrBuy, subLocality, bhkCount, maxPrice, searchQuery, verifiedOnly, zeroBrokerageOnly, sortBy]);
+  }, [properties, rentOrBuy, subLocality, bhkCount, maxPrice, searchQuery, verifiedOnly, zeroBrokerageOnly, sortBy, furnishing, possession, facing]);
 
   const handleResetFilters = () => {
     setRentOrBuy('Any');
@@ -134,6 +147,9 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
     setVerifiedOnly(false);
     setZeroBrokerageOnly(false);
     setSortBy('popular');
+    setFurnishing('Any');
+    setPossession('Any');
+    setFacing('Any');
   };
 
   const getPriceLabel = (p: Property) => {
@@ -570,147 +586,13 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
               </div>
 
               {/* Right Column: VECTOR MAP GRAPHIC WITH CLICKABLE PINS */}
-              <div className="lg:col-span-3 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col overflow-hidden relative shadow-inner">
-                {/* Upper header statistics block */}
-                <div className="p-3 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 text-white flex items-center justify-between text-xs">
-                  <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> West Hyderabad Map Registry
-                  </span>
-                  <span className="bg-emerald-600/20 text-emerald-300 font-mono text-[9px] py-0.5 px-1.5 rounded-md border border-emerald-500/20">
-                    Interactive
-                  </span>
-                </div>
-
-                {/* Main Vector map body representation containing streets & layout bounds */}
-                <div className="flex-1 relative bg-slate-900">
-                  <svg className="w-full h-full min-h-[300px]" viewBox="0 0 500 380">
-                    {/* Definitions */}
-                    <defs>
-                      <pattern id="road-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <line x1="0" y1="20" x2="40" y2="20" stroke="#1e293b" strokeWidth="1" />
-                        <line x1="20" y1="0" x2="20" y2="40" stroke="#1e293b" strokeWidth="1" />
-                      </pattern>
-                    </defs>
-
-                    {/* Street pattern grid background */}
-                    <rect width="100%" height="100%" fill="url(#road-pattern)" />
-
-                    {/* District Area Boundaries Polygons */}
-                    {/* Kondapur (Top representation) */}
-                    <polygon points="120,40 330,40 280,120 180,120" fill="rgba(16, 185, 129, 0.05)" stroke="#334155" strokeWidth="1" />
-                    <text x="210" y="70" fill="#64748b" className="text-[10px] font-display uppercase tracking-widest font-semibold pointer-events-none" opacity="0.6">Kondapur</text>
-
-                    {/* Jubilee Hills (Right top representation) */}
-                    <polygon points="330,40 480,80 440,180 340,180" fill="rgba(16, 185, 129, 0.04)" stroke="#334155" strokeWidth="1" />
-                    <text x="370" y="110" fill="#64748b" className="text-[10px] font-display uppercase tracking-widest font-semibold pointer-events-none" opacity="0.6">Jubilee Hills</text>
-
-                    {/* Madhapur (Central layout) */}
-                    <polygon points="180,120 340,120 310,230 200,210" fill="rgba(14, 165, 233, 0.04)" stroke="#334155" strokeWidth="1" />
-                    <text x="235" y="155" fill="#64748b" className="text-[10px] font-display uppercase tracking-widest font-semibold pointer-events-none" opacity="0.6">Madhapur</text>
-
-                    {/* Gachibowli (Left central layout) */}
-                    <polygon points="80,210 200,210 160,320 60,280" fill="rgba(14, 165, 233, 0.05)" stroke="#334155" strokeWidth="1" />
-                    <text x="95" y="245" fill="#64748b" className="text-[10px] font-display uppercase tracking-widest font-semibold pointer-events-none" opacity="0.6">Gachibowli</text>
-
-                    {/* Financial District (Bottom representation) */}
-                    <polygon points="60,280 160,320 120,380 40,360" fill="rgba(16, 185, 129, 0.04)" stroke="#334155" strokeWidth="1" />
-                    <text x="50" y="340" fill="#64748b" className="text-[9px] font-display uppercase tracking-widest pointer-events-none" opacity="0.6">Fin District</text>
-
-                    {/* Vector Arterial Roads representing Hyderabad Outer Ring Road (ORR) */}
-                    <path d="M 30,120 C 150,150 250,300 450,320" fill="none" stroke="#475569" strokeWidth="2.5" strokeDasharray="6 4" />
-                    <text x="140" y="190" fill="#475569" className="text-[8px] font-mono pointer-events-none" rotate="12">Outer Ring Road (ORR)</text>
-
-                    {/* Lake representation (Durgam Cheruvu Lagoon) */}
-                    <ellipse cx="290" cy="240" rx="35" ry="18" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" strokeWidth="1" />
-                    <text x="260" y="242" fill="#0ea5e9" className="text-[8px] font-mono pointer-events-none font-semibold">Durgam Lake</text>
-
-                    {/* Clickable pins mapped dynamically */}
-                    {Object.entries(mapCoordinates).map(([pId, coords]) => {
-                       const listMatched = filteredProperties.find((fp) => fp.id === pId);
-                       const isHovered = selectedMapPropId === pId;
-
-                       // Skip rendering marker if it's filtered out of current scope
-                       if (!listMatched) return null;
-
-                       return (
-                         <g 
-                           key={pId} 
-                           className="cursor-pointer" 
-                           onClick={() => setSelectedMapPropId(pId)}
-                         >
-                           {/* Animated concentric radar rings */}
-                           {isHovered && (
-                             <circle
-                               cx={coords.x}
-                               cy={coords.y}
-                               r="16"
-                               fill="rgba(16, 185, 129, 0.3)"
-                               className="animate-ping"
-                               style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
-                             />
-                           )}
-
-                           {/* Pin Pointer Base marker */}
-                           <circle
-                             cx={coords.x}
-                             cy={coords.y}
-                             r={isHovered ? "8" : "6"}
-                             fill={isHovered ? "#0ea5e9" : "#10b981"}
-                             stroke="#ffffff"
-                             strokeWidth="2"
-                             className="transition-all duration-300"
-                           />
-
-                           {/* Dynamic Small tooltip text overlay */}
-                           <text
-                             x={coords.x}
-                             y={coords.y - 12}
-                             textAnchor="middle"
-                             fill={isHovered ? "#38bdf8" : "#a7f3d0"}
-                             className="text-[9px] font-mono font-bold tracking-tight bg-slate-950 pointer-events-none"
-                           >
-                             ₹{(listMatched.price >= 10000000 ? (listMatched.price / 10000000).toFixed(1) + 'C' : (listMatched.price / 1000).toFixed(0) + 'K')}
-                           </text>
-                         </g>
-                       );
-                    })}
-                  </svg>
-
-                  {/* Overlaid Selected Property Quick Card HUD */}
-                  {selectedMapProperty && (
-                    <div className="absolute bottom-3 left-3 right-3 bg-slate-900/95 backdrop-blur-md border border-slate-750 p-3 rounded-xl flex items-center justify-between text-white animate-scale-in">
-                      <div className="flex gap-2 min-w-0">
-                        <div className="w-12 h-12 rounded-lg bg-zinc-850 overflow-hidden shrink-0">
-                          <img
-                            src={selectedMapProperty.images[0]}
-                            alt={selectedMapProperty.title}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-semibold truncate text-white leading-tight">
-                            {selectedMapProperty.title}
-                          </h4>
-                          <p className="text-[9px] font-mono text-slate-300">
-                            {selectedMapProperty.subLocality} • {selectedMapProperty.bedrooms} BHK
-                          </p>
-                          <p className="text-[11px] font-mono font-bold text-emerald-400 mt-0.5">
-                            {getPriceLabel(selectedMapProperty)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => onSelectProperty(selectedMapProperty)}
-                        className="bg-emerald-600 hover:bg-emerald-500 font-bold text-[10px] uppercase py-1.5 px-3 rounded-lg text-white font-display shrink-0"
-                      >
-                        Inspect Details
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div className="lg:col-span-3">
+                <InteractiveMap
+                  properties={filteredProperties}
+                  selectedProperty={properties.find(p => p.id === selectedMapPropId) || null}
+                  onSelectProperty={onSelectProperty}
+                  hoveredPropertyId={null}
+                />
               </div>
             </div>
           )}
