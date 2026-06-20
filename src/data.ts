@@ -43,13 +43,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 98765 43210',
       email: 'arjun@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Fully-Furnished',
-    possessionStatus: 'Ready to Move',
-    reraId: 'TS-RERA-2026-00412',
-    latitude: 17.4401,
-    longitude: 78.3489,
-    proximityScores: { metro: 0.8, workspace: 0.4, hospital: 1.2, school: 2.1 }
+    }
   },
   {
     id: 'prop-2',
@@ -86,13 +80,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 99887 76655',
       email: 'suhasini@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Semi-Furnished',
-    possessionStatus: 'Ready to Move',
-    reraId: 'TS-RERA-2026-00789',
-    latitude: 17.4316,
-    longitude: 78.4016,
-    proximityScores: { metro: 2.5, workspace: 3.5, hospital: 0.7, school: 0.5 }
+    }
   },
   {
     id: 'prop-3',
@@ -127,13 +115,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 91234 56789',
       email: 'rohan@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Fully-Furnished',
-    possessionStatus: 'Ready to Move',
-    reraId: 'TS-RERA-2026-00912',
-    latitude: 17.4483,
-    longitude: 78.3915,
-    proximityScores: { metro: 0.3, workspace: 0.5, hospital: 1.5, school: 1.0 }
+    }
   },
   {
     id: 'prop-4',
@@ -168,13 +150,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 98765 43210',
       email: 'arjun@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Fully-Furnished',
-    possessionStatus: 'Ready to Move',
-    reraId: 'TS-RERA-2026-00332',
-    latitude: 17.4184,
-    longitude: 78.3392,
-    proximityScores: { metro: 1.4, workspace: 0.2, hospital: 2.0, school: 1.8 }
+    }
   },
   {
     id: 'prop-5',
@@ -208,13 +184,7 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 91234 56789',
       email: 'rohan@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Semi-Furnished',
-    possessionStatus: 'Ready to Move',
-    reraId: 'TS-RERA-2026-00554',
-    latitude: 17.4622,
-    longitude: 78.3568,
-    proximityScores: { metro: 1.9, workspace: 1.1, hospital: 0.8, school: 0.9 }
+    }
   },
   {
     id: 'prop-6',
@@ -248,15 +218,9 @@ export const INITIAL_PROPERTIES: Property[] = [
       phone: '+91 99887 76655',
       email: 'suhasini@ourhome.com',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&h=120&q=80'
-    },
-    furnishing: 'Unfurnished',
-    possessionStatus: 'Under Construction',
-    reraId: 'TS-RERA-2026-00991',
-    latitude: 17.4156,
-    longitude: 78.4347,
-    proximityScores: { metro: 0.6, workspace: 2.8, hospital: 0.4, school: 1.1 }
+    }
   }
-];;
+];
 
 export const INITIAL_APPOINTMENTS: Appointment[] = [
   {

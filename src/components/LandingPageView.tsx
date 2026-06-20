@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Property } from '../types';
-import { Search, Eye, Sparkles, Building, Key, Handshake, ShieldCheck, Heart, ArrowRight } from 'lucide-react';
-import { GlassCard } from './ui/GlassCard';
-import { FilterDrawer } from '../components/FilterDrawer';
+import { 
+  Search, Eye, Sparkles, Building, Key, Handshake, ShieldCheck, Heart, ArrowRight,
+  Smile, Coffee, Compass, HeartHandshake, CheckCircle2, Zap, Check, HelpCircle
+} from 'lucide-react';
 
 interface LandingPageViewProps {
   properties: Property[];
@@ -27,16 +27,20 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
   savedIds,
   onToggleSave,
 }) => {
-  const [filteredProperties, setFilteredProperties] = React.useState<Property[]>(properties);
-  const [filterOpen, setFilterOpen] = React.useState<boolean>(false);
-
-  // Sync filtered list when original properties change
-  React.useEffect(() => {
-    setFilteredProperties(properties);
-  }, [properties]);
   const [searchQuery, setSearchQuery] = useState('');
   const [propertyType, setPropertyType] = useState<'Any' | 'Buy' | 'Rent'>('Any');
   const [subLocality, setSubLocality] = useState('');
+
+  // Emotional Sanctuary Vibe Quiz state
+  const [quizStep, setQuizStep] = useState<number>(0);
+  const [vibeMood, setVibeMood] = useState<string>('');
+  const [vibeFocus, setVibeFocus] = useState<string>('');
+  const [vibeTrust, setVibeTrust] = useState<string>('');
+  const [quizMatchedProperty, setQuizMatchedProperty] = useState<Property | null>(null);
+  const [quizScore, setQuizScore] = useState<number>(0);
+
+  // OurHome Trust Hub Interactive Active Tab
+  const [activeTrustPillar, setActiveTrustPillar] = useState<'nonagent' | 'title' | 'rera'>('nonagent');
 
   const featuredProperties = properties.filter((p) => p.featured && p.status === 'Approved');
 
@@ -56,6 +60,56 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
       const crVal = p.price / 10000000;
       return `₹${crVal.toFixed(2)} Cr`;
     }
+  };
+
+  const handleVibeSelection = (step: number, answer: string) => {
+    if (step === 1) {
+      setVibeMood(answer);
+      setQuizStep(2);
+    } else if (step === 2) {
+      setVibeFocus(answer);
+      setQuizStep(3);
+    } else if (step === 3) {
+      setVibeTrust(answer);
+      
+      // Determine match from current approved listings pool
+      const filtered = properties.filter((p) => p.status === 'Approved');
+      let bestFit = filtered[0] || null;
+      let score = 92;
+
+      if (answer === 'trust_rera') {
+        const luxuryEst = filtered.find(p => p.subLocality?.toLowerCase().includes('jubilee') || p.price > 40000000);
+        if (luxuryEst) {
+          bestFit = luxuryEst;
+          score = 99;
+        }
+      } else if (vibeMood === 'morning_urban' || vibeFocus === 'focus_smart') {
+        const smartCondo = filtered.find(p => p.subLocality?.toLowerCase().includes('gachibowli') || p.title.toLowerCase().includes('oasis') || p.title.toLowerCase().includes('smart'));
+        if (smartCondo) {
+          bestFit = smartCondo;
+          score = 97;
+        }
+      } else {
+        const popularUnit = filtered.find(p => p.featured) || filtered.find(p => p.subLocality?.toLowerCase().includes('madhapur'));
+        if (popularUnit) {
+          bestFit = popularUnit;
+          score = 95;
+        }
+      }
+
+      setQuizMatchedProperty(bestFit);
+      setQuizScore(score);
+      setQuizStep(4);
+    }
+  };
+
+  const handleResetVibeQuiz = () => {
+    setQuizStep(0);
+    setVibeMood('');
+    setVibeFocus('');
+    setVibeTrust('');
+    setQuizMatchedProperty(null);
+    setQuizScore(0);
   };
 
   return (
@@ -125,14 +179,6 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             >
               Search
             </button>
-            {/* Filter Drawer Trigger */}
-            <button
-              type="button"
-              onClick={() => setFilterOpen(true)}
-              className="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium text-sm py-2 px-4 rounded-xl shadow"
-            >
-              Filters
-            </button>
           </form>
 
           {/* Quick Sublocalities Tag Links */}
@@ -149,6 +195,298 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Premium Smart Decider Banner Tag callout */}
+          <div className="mt-8 bg-indigo-50 border border-indigo-100 p-4 rounded-2xl max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs text-left">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1 bg-indigo-600 text-white font-mono text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full select-none">
+                <Sparkles className="w-2.5 h-2.5" /> Premium innovative tool
+              </span>
+              <h4 className="font-display font-bold text-slate-900 text-xs sm:text-sm">Confused which estate is best for your family?</h4>
+              <p className="text-[11px] text-slate-550 leading-normal">Calculate real monthly cash flows including Gachibowli commute time, fuel costs, interest rates, and society maintenance side-by-side.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigateToTab('decider')}
+              className="whitespace-nowrap bg-indigo-600 hover:bg-indigo-705 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-md hover:indigo-700 transition-all flex items-center gap-1 cursor-pointer"
+            >
+              Try Decider Tool 🎯
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Sanctuary Aspiration & Vibe Matcher Quiz (Emotional & Eye-Attractive UX) */}
+      <section id="sanctuary-vibe-quiz" className="bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950/85 border border-slate-800 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <Compass className="w-64 h-64 text-emerald-400 rotate-12" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Aspirational copy & trust assurances */}
+          <div className="lg:col-span-5 space-y-5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono tracking-wider uppercase rounded-full border border-emerald-500/20 select-none">
+              <Sparkles className="w-3.5 h-3.5" /> Direct Choice Evaluator
+            </div>
+            <h2 className="font-display text-2xl md:text-3.5xl font-black tracking-tight text-white leading-tight">
+              Discover Your Ideal <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-300">Sanctuary Vibe</span>
+            </h2>
+            <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+              Finding a luxury residency represents a deep personal commitment. Skip rigid search engines. Answer 3 brief lifestyle &amp; aspiration questions to receive an instant, emotionally tailored 99% match from our verified Hyderabad collection.
+            </p>
+
+            <ul className="space-y-3.5 text-xs text-slate-400">
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>100% Broker-Free Direct Builder Contracts</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Ironclad TS-RERA Registry Verification Audits</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Premium Live Video-Guidance Support</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Interactive Game / Matcher Box */}
+          <div className="lg:col-span-7 bg-slate-950/50 border border-slate-800 rounded-2xl p-6 relative shadow-inner min-h-[345px] flex flex-col justify-between">
+            {/* Step indicators */}
+            <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-4 select-none">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+                {quizStep === 0 ? 'READY TO START' : quizStep < 4 ? `Aspiration Step ${quizStep} of 3` : 'MATCH RESULTS FOUND'}
+              </span>
+              <div className="flex gap-1.5">
+                {[1, 2, 3].map((step) => (
+                  <div 
+                    key={step} 
+                    className={`h-1.5 rounded-full transition-all duration-350 ${
+                      quizStep >= step ? (quizStep === 4 ? 'w-4 bg-emerald-400' : 'w-4 bg-sky-400') : 'w-1.5 bg-slate-800'
+                    }`} 
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* QUIZ STEP 0: Splash */}
+            {quizStep === 0 && (
+              <div className="space-y-6 my-auto text-center py-4 animate-fade-in">
+                <div className="mx-auto w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center text-emerald-400 shadow-sm">
+                  <Smile className="w-7 h-7" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-display font-bold text-lg text-white">How does your family want to experience Hyderabad?</h3>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                    Let's match your heart with the right community footprint — whether a majestic botanical penthouse in Gachibowli or a leafy estate in Jubilee Hills.
+                  </p>
+                </div>
+                <button
+                  id="btn-start-vibe-quiz"
+                  type="button"
+                  onClick={() => setQuizStep(1)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs font-sans tracking-wide shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  Find My Sanctuary Vibe <Compass className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* QUIZ STEP 1: Morning Vibe */}
+            {quizStep === 1 && (
+              <div className="space-y-4 animate-fade-in my-auto py-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-sky-500/10 rounded-lg text-sky-400 border border-sky-500/20">
+                    <Coffee className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-slate-105">1. What is your family's ideal weekend morning mood?</h4>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(1, 'morning_serene')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-805 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Cozy quiet sunrise over a leafy garden veranda (Jubilee Hills Estates Vibe)</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(1, 'morning_urban')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-805 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Dynamic sunrays bouncing off gorgeous panoramic smart skyscrapers (IT High-rise Vibe)</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(1, 'morning_vibrant')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Convenient fast-access to tech campuses, boutique health clubs &amp; retail complexes</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* QUIZ STEP 2: Lifestyle Comfort attribute */}
+            {quizStep === 2 && (
+              <div className="space-y-4 animate-fade-in my-auto py-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
+                    <Compass className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-slate-105">2. Which layout parameter nurtures your private lifestyle best?</h4>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(2, 'focus_office')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>A dedicated, soundproof executive work study with gigabit ethernet conduits</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(2, 'focus_backyard')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Vast double-height living salons, solid wood floors, &amp; rooftop sky decks</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(2, 'focus_smart')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>State-of-the-art smart home integration panels, solar micro-grids, &amp; EV charges</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* QUIZ STEP 3: Trust Parameter selection */}
+            {quizStep === 3 && (
+              <div className="space-y-4 animate-fade-in my-auto py-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
+                    <HeartHandshake className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-display font-bold text-sm text-slate-105">3. What represents absolute transactional security for you?</h4>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(3, 'trust_direct')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>100% direct-deal zero brokerage model to save huge agency markups</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(3, 'trust_rera')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Rigorous TS-RERA legal compliance audits and clear land title deed clearances</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVibeSelection(3, 'trust_live')}
+                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                  >
+                    <span>Warm, attentive real-time chat consultation mapping out instant offline tours</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* QUIZ STEP 4: Success MATCH Recommended layout */}
+            {quizStep === 4 && (
+              <div className="space-y-4 animate-fade-in my-auto py-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
+                    <div>
+                      <h4 className="font-display font-extrabold text-sm text-slate-105">Recommended Sanctuary Fitted!</h4>
+                      <p className="text-[10px] text-slate-400">Calculated based on your specific lifestyle selections</p>
+                    </div>
+                  </div>
+                  <span className="font-mono text-xs font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/25 shrink-0 self-start sm:self-auto select-none">
+                    {quizScore}% Match Rating
+                  </span>
+                </div>
+
+                {quizMatchedProperty ? (
+                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row gap-4 items-stretch">
+                    {/* Thumbnail */}
+                    <div className="w-full sm:w-28 h-24 rounded-lg overflow-hidden bg-slate-800 shrink-0 relative">
+                      <img 
+                        src={quizMatchedProperty.images[0]} 
+                        alt={quizMatchedProperty.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {/* Details content */}
+                    <div className="flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <div className="flex justify-between items-start gap-1">
+                          <h5 className="font-display font-semibold text-white text-xs line-clamp-1">{quizMatchedProperty.title}</h5>
+                          <span className="font-mono text-emerald-400 font-bold text-xs shrink-0">{getPriceLabel(quizMatchedProperty)}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 line-clamp-2">{quizMatchedProperty.location}</p>
+                      </div>
+                      
+                      {/* Vibe description feedback block */}
+                      <p className="text-[10px] italic text-slate-300 leading-normal bg-slate-950/40 p-2 rounded-lg border border-slate-900/60">
+                        "Matches your heart's desire with beautiful {quizMatchedProperty.subLocality} parameters, secured by our verified direct platform architecture."
+                      </p>
+
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleResetVibeQuiz()}
+                          className="text-[10px] hover:underline text-slate-400 font-mono"
+                        >
+                          &larr; Start Over
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSelectProperty(quizMatchedProperty)}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                        >
+                          Inspect Match <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-xs text-slate-400 space-y-2">
+                    <p>No listings matched your criteria perfectly in current pool.</p>
+                    <button
+                      type="button"
+                      onClick={() => handleResetVibeQuiz()}
+                      className="text-emerald-400 hover:underline"
+                    >
+                      Reset and try different lifestyles
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Micro assurance disclaimer footer */}
+            <div className="mt-3 text-[9px] text-slate-500 text-center border-t border-slate-900 pt-2 select-none">
+              All recommended sanctuaries adhere to 100% direct broker-free regulatory protocols.
+            </div>
+          </div>
         </div>
       </section>
 
@@ -161,7 +499,11 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {/* BUY CARD */}
-          <GlassCard id="cat-buy" onClick={() => onNavigateToListings({ type: 'Buy' })} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
+          <div 
+            id="cat-buy"
+            onClick={() => onNavigateToListings({ type: 'Buy' })}
+            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
+          >
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <Building className="w-5 h-5" />
             </div>
@@ -169,10 +511,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Buy Property</h3>
               <p className="text-xs text-neutral-500 mt-1">Acquire premier, vetted premium residential estates.</p>
             </div>
-          </GlassCard>
+          </div>
 
           {/* RENT CARD */}
-          <GlassCard id="cat-rent" onClick={() => onNavigateToListings({ type: 'Rent' })} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
+          <div 
+            id="cat-rent"
+            onClick={() => onNavigateToListings({ type: 'Rent' })}
+            className="group cursor-pointer bg-white border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
+          >
             <div className="p-3 bg-emerald-50 text-emerald-650 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
               <Key className="w-5 h-5" />
             </div>
@@ -180,10 +526,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-emerald-600 transition-colors">Rent Luxury</h3>
               <p className="text-xs text-neutral-500 mt-1">Lease exclusive smart urban flats and duplex suites.</p>
             </div>
-          </GlassCard>
+          </div>
 
           {/* SELL CARD (Directs to Builder/Owner Tab) */}
-          <GlassCard id="cat-sell" onClick={() => onNavigateToTab('dashboard')} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
+          <div 
+            id="cat-sell"
+            onClick={() => onNavigateToTab('dashboard')}
+            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
+          >
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <Handshake className="w-5 h-5" />
             </div>
@@ -191,10 +541,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Sell &amp; List</h3>
               <p className="text-xs text-neutral-500 mt-1">Market your property. Access builder listing tools.</p>
             </div>
-          </GlassCard>
+          </div>
 
           {/* SERVICES CARD */}
-          <GlassCard id="cat-services" onClick={() => { alert("OurHome Elite Services: Dynamic Interior Decorating, Handpicked Movers, Facility Auditing, and Smart Automation setups are currently available for pre-booking inside active property chats!"); }} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 glass-card">
+          <div 
+            id="cat-services"
+            onClick={() => onNavigateToTab('services')}
+            className="group cursor-pointer bg-white border border-neutral-100 hover:border-emerald-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1"
+          >
             <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
               <Sparkles className="w-5 h-5" />
             </div>
@@ -202,10 +556,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-emerald-600 transition-colors">Home Services</h3>
               <p className="text-xs text-neutral-500 mt-1">Premium moving, maintenance, and automation consulting.</p>
             </div>
-          </GlassCard>
+          </div>
 
           {/* CONTROL CENTER CARD */}
-          <GlassCard id="cat-admin" onClick={() => onNavigateToTab('admin')} className="group cursor-pointer bg-white/30 border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 col-span-2 lg:col-span-1 glass-card">
+          <div 
+            id="cat-admin"
+            onClick={() => onNavigateToTab('admin')}
+            className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 col-span-2 lg:col-span-1"
+          >
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -213,7 +571,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
               <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Admin Panel</h3>
               <p className="text-xs text-neutral-500 mt-1">Audit verification requests &amp; supervise platform health.</p>
             </div>
-          </GlassCard>
+          </div>
         </div>
       </section>
 
@@ -234,7 +592,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredProperties.map((p) => {
+          {featuredProperties.map((p) => {
             const isSaved = savedIds.includes(p.id);
             return (
               <div 
@@ -329,27 +687,104 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         </div>
       </section>
 
-      {/* Luxury Brand Trust Stats Info Card */}
-      <section id="trust-banner" className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-neutral-50 border border-neutral-200/60 p-8 rounded-3xl">
-        <div className="space-y-1">
-          <p className="text-3xl font-display font-bold text-neutral-950">99.7%</p>
-          <h4 className="font-display font-medium text-sm text-neutral-800">Verified Deeds</h4>
-          <p className="text-xs text-neutral-500">Every single listing is audited by our rigorous title verification committee.</p>
+      {/* Interactive trust Assurance Hub (Emotional & Client-focused UX) */}
+      <section id="trust-assurance-hub" className="bg-slate-50 border border-slate-200/70 p-6 md:p-8 rounded-3xl space-y-6">
+        <div className="text-center max-w-xl mx-auto space-y-1.5 pb-2">
+          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            Ironclad Security Guarantee
+          </span>
+          <h3 className="font-display text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Our Zero-Risk Transaction Standards</h3>
+          <p className="text-xs text-slate-500">Click each pillar to inspect our digital verification seals, certificates, &amp; escrow protocols.</p>
         </div>
-        <div className="space-y-1">
-          <p className="text-3xl font-display font-bold text-neutral-950">₹3,400 Cr+</p>
-          <h4 className="font-display font-medium text-sm text-neutral-800">Transacted Assets</h4>
-          <p className="text-xs text-neutral-500">Supervising secure transactions with elite trust escrow systems.</p>
+
+        {/* Dynamic Column Switcher */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            type="button"
+            onClick={() => setActiveTrustPillar('nonagent')}
+            className={`text-left p-5 rounded-2xl border transition-all cursor-pointer ${
+              activeTrustPillar === 'nonagent'
+                ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/10'
+                : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'
+            }`}
+          >
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-2xl md:text-3.5xl font-display font-black text-slate-900">0%</span>
+              <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase">
+                Active
+              </span>
+            </div>
+            <h4 className="font-display font-bold text-slate-800 text-xs md:text-sm mt-3">Direct Builder Trade (No Brokerage)</h4>
+            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">Bypass local real estate agent commissions to save an average of ₹4.8 Lakhs per purchase.</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrustPillar('title')}
+            className={`text-left p-5 rounded-2xl border transition-all cursor-pointer ${
+              activeTrustPillar === 'title'
+                ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/10'
+                : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'
+            }`}
+          >
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-2xl md:text-3.5xl font-display font-black text-slate-900">99.7%</span>
+              <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase">
+                Audited
+              </span>
+            </div>
+            <h4 className="font-display font-bold text-slate-800 text-xs md:text-sm mt-3">Verified Land Title Deeds</h4>
+            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">Every listing is cross-referenced with government registries prior to publication.</p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrustPillar('rera')}
+            className={`text-left p-5 rounded-2xl border transition-all cursor-pointer ${
+              activeTrustPillar === 'rera'
+                ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/10'
+                : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'
+            }`}
+          >
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-2xl md:text-3.5xl font-display font-black text-slate-900">TS-RERA</span>
+              <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 uppercase">
+                Compliant
+              </span>
+            </div>
+            <h4 className="font-display font-bold text-slate-800 text-xs md:text-sm mt-3">Housing Authority Certified</h4>
+            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 text-left">Strict alignment with housing development codes ensuring guaranteed floor possession dates.</p>
+          </button>
         </div>
-        <div className="space-y-1">
-          <p className="text-3xl font-display font-bold text-neutral-950">24 mins</p>
-          <h4 className="font-display font-medium text-sm text-neutral-800">Avg. Response</h4>
-          <p className="text-xs text-neutral-500">Unmatched agent SLA ensuring active real-time call handling.</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-3xl font-display font-bold text-neutral-950">RERA</p>
-          <h4 className="font-display font-medium text-sm text-neutral-800">100% Compliant</h4>
-          <p className="text-xs text-neutral-500">Complete compliance with housing development regulatory authorities.</p>
+
+        {/* Active Pillar detail card */}
+        <div id="trust-active-info-panel" className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-5 animate-fade-in shadow-xs text-left">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span className="font-display font-extrabold text-xs text-slate-900 uppercase tracking-widest font-mono">
+                {activeTrustPillar === 'nonagent' && 'Exclusive Zero Broker Fee Guarantee Certificate'}
+                {activeTrustPillar === 'title' && 'Government Land Registry Audit Signature'}
+                {activeTrustPillar === 'rera' && 'TS-RERA Legal Vetting Approval Status'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-normal max-w-2xl">
+              {activeTrustPillar === 'nonagent' && 'OurHome contracts connect buyers directly to builders and approved first-degree owners. No middlemen, no hidden handling charges, and absolute price transparency. Our system signs smart, binding letters of intent directly.'}
+              {activeTrustPillar === 'title' && 'Each property profile undergoes rigorous physical & digital screening by legal title examiners, matching government sub-registrar archives. Our platform protects your capital down payments with comprehensive deed assurance.'}
+              {activeTrustPillar === 'rera' && ' Telangana Housing Regulatory Authority rules require extensive disclosures about common areas, construction materials, and timeline milestones. We actively trace builder RERA registration certificates to guarantee complete legal security.'}
+            </p>
+          </div>
+
+          {/* Emotional Visual Badge Stamp */}
+          <div className="bg-emerald-50 text-emerald-800 border-2 border-dashed border-emerald-300 rounded-xl p-4 flex flex-col items-center justify-center text-center shrink-0 w-full md:w-44 select-none">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 mb-1 animate-pulse" />
+            <span className="font-mono text-[9px] font-bold text-emerald-700 tracking-wider">PLATFORM SEAL</span>
+            <span className="font-display font-black text-xs text-emerald-900 tracking-tight uppercase">
+              {activeTrustPillar === 'nonagent' && '100% DIRECT DEAL'}
+              {activeTrustPillar === 'title' && 'DEED VERIFIED'}
+              {activeTrustPillar === 'rera' && 'RERA REGISTERED'}
+            </span>
+          </div>
         </div>
       </section>
 

@@ -15,11 +15,13 @@ import { ListingsPageView } from './components/ListingsPageView';
 import { BuilderPortalView } from './components/BuilderPortalView';
 import { AdminPortalView } from './components/AdminPortalView';
 import { LiveChatDrawer } from './components/LiveChatDrawer';
-import ThemeToggle from './components/ui/ThemeToggle';
+import { MaintenanceManagementView } from './components/MaintenanceManagementView';
+import { SuperServicesView } from './components/SuperServicesView';
+import { SmartDeciderView } from './components/SmartDeciderView';
 import { 
   Building2, Sliders, Bell, User, Clock, Heart, ShieldAlert,
   Menu, X, Sparkles, LayoutDashboard, Compass, Layers, CheckCircle2, ChevronDown,
-  MessageSquare
+  MessageSquare, CheckSquare
 } from 'lucide-react';
 
 export default function App() {
@@ -51,7 +53,7 @@ export default function App() {
 
   // Router States
   const [activeTab, setActiveTabState] = useState<string>('landing'); // 'landing', 'listings', 'dashboard', 'admin'
-  const [activeRole, setActiveRole] = useState<'customer' | 'builder' | 'admin'>('customer');
+  const [activeRole, setActiveRole] = useState<'customer' | 'builder' | 'admin' | 'maintenance'>('customer');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   
   // Custom Filters pre-passed to Listings page for quick searching
@@ -70,6 +72,24 @@ export default function App() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(2);
   const [profileDropdown, setProfileDropdown] = useState(false);
+
+  // Dynamic Premium Toast State
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
+
+  const triggerToast = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  useEffect(() => {
+    (window as any).triggerOurHomeToast = triggerToast;
+    return () => {
+      (window as any).triggerOurHomeToast = undefined;
+    };
+  }, []);
 
   // Sync to localStorage on raw state changes
   useEffect(() => {
@@ -104,49 +124,42 @@ export default function App() {
 
   // Real-Time SSE listener connecting to full-stack Express engine
   useEffect(() => {
-    let eventSource: EventSource;
-    try {
-      console.log("Establishing Real-Time Server SSE channel...");
-      eventSource = new EventSource('/api/chat/stream');
+    console.log("Establishing Real-Time Server SSE channel...");
+    const eventSource = new EventSource('/api/chat/stream');
 
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'sync') {
-            setChatMessages(data.messages || []);
-            setChatInvitations(data.invitations || []);
-            setChatTypingStates(data.typingStates || []);
-          } else if (data.type === 'msg') {
-            setChatMessages((prev) => {
-              if (prev.some(m => m.id === data.message.id)) return prev;
-              return [...prev, data.message];
-            });
-          } else if (data.type === 'typing_sync') {
-            setChatTypingStates(data.typingStates || []);
-          } else if (data.type === 'invite') {
-            setChatInvitations((prev) => {
-              if (prev.some(i => i.id === data.invitation.id)) return prev;
-              return [...prev, data.invitation];
-            });
-            // Alert user or sync telemetry
-            addTelemetryLog(`[Real-Time Event] Online live inquiry room request registered for "${data.invitation.propertyTitle}" by ${data.invitation.customerName}.`);
-          }
-        } catch (err) {
-          console.error("Failed to parse SSE event payload:", err);
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'sync') {
+          setChatMessages(data.messages || []);
+          setChatInvitations(data.invitations || []);
+          setChatTypingStates(data.typingStates || []);
+        } else if (data.type === 'msg') {
+          setChatMessages((prev) => {
+            if (prev.some(m => m.id === data.message.id)) return prev;
+            return [...prev, data.message];
+          });
+        } else if (data.type === 'typing_sync') {
+          setChatTypingStates(data.typingStates || []);
+        } else if (data.type === 'invite') {
+          setChatInvitations((prev) => {
+            if (prev.some(i => i.id === data.invitation.id)) return prev;
+            return [...prev, data.invitation];
+          });
+          // Alert user or sync telemetry
+          addTelemetryLog(`[Real-Time Event] Online live inquiry room request registered for "${data.invitation.propertyTitle}" by ${data.invitation.customerName}.`);
         }
-      };
+      } catch (err) {
+        console.error("Failed to parse SSE event payload:", err);
+      }
+    };
 
-      eventSource.onerror = (err) => {
-        console.warn("Realtime EventSource channel reconnecting...", err);
-      };
-    } catch (e) {
-      console.error("Failed to initialize SSE connection:", e);
-    }
+    eventSource.onerror = (err) => {
+      console.warn("Realtime EventSource channel reconnecting...", err);
+    };
 
     return () => {
-      if (eventSource) {
-        eventSource.close();
-      }
+      eventSource.close();
     };
   }, []);
 
@@ -286,7 +299,7 @@ export default function App() {
     );
     const pTitle = properties.find((p) => p.id === id)?.title || id;
     addTelemetryLog(`Admin Verified Approved: Checked RERA certificates and set "${pTitle}" to active, broadcast public.`);
-    alert(`Property "${pTitle}" has been verified, approved, and publicized!`);
+    triggerToast(`Property "${pTitle}" has been verified, approved, and publicized!`, 'success');
   };
 
   const handleRejectProperty = (id: string) => {
@@ -295,7 +308,7 @@ export default function App() {
     );
     const pTitle = properties.find((p) => p.id === id)?.title || id;
     addTelemetryLog(`Admin Flag Reject: Suspended deed validation audit on "${pTitle}" for RERA discrepancy.`);
-    alert(`Deed rejected! Warning telemetry sent back to the builder profile regarding "${pTitle}".`);
+    triggerToast(`Deed rejected! Warning telemetry sent back to the builder profile regarding "${pTitle}".`, 'warning');
   };
 
   const handleResolveSupportTicket = (id: string) => {
@@ -332,7 +345,7 @@ export default function App() {
     setListingsPreFilters(undefined);
   };
 
-  const handleSwitchRole = (role: 'customer' | 'builder' | 'admin') => {
+  const handleSwitchRole = (role: 'customer' | 'builder' | 'admin' | 'maintenance') => {
     setActiveRole(role);
     setSelectedProperty(null);
     if (role === 'customer') {
@@ -341,6 +354,8 @@ export default function App() {
       setActiveTabState('dashboard');
     } else if (role === 'admin') {
       setActiveTabState('admin');
+    } else if (role === 'maintenance') {
+      setActiveTabState('maintenance');
     }
     addTelemetryLog(`Switched Workspace: Swapped active workspace viewport context to "${role.toUpperCase()}".`);
   };
@@ -374,18 +389,21 @@ export default function App() {
                 <span className="text-[9px] font-mono leading-none tracking-widest text-emerald-600 block uppercase font-bold">Hyderabad Portal</span>
               </div>
             </div>
-            <ThemeToggle />
 
              {/* Desktop Navigation Links (Dynamically isolated by selected user workspace role) */}
             <nav id="desktop-nav" className="hidden md:flex items-center gap-1.5">
               {(activeRole === 'customer'
                 ? [
                     { id: 'landing', label: 'Explore Home', icon: Compass },
-                    { id: 'listings', label: 'Buy &amp; Rent', icon: Sliders }
+                    { id: 'listings', label: 'Buy &amp; Rent', icon: Sliders },
+                    { id: 'decider', label: 'Decision Helper 🎯', icon: CheckSquare },
+                    { id: 'services', label: 'Super Services ⚡', icon: Sparkles }
                   ]
                 : activeRole === 'builder'
                 ? [{ id: 'dashboard', label: 'Builder Desk', icon: LayoutDashboard }]
-                : [{ id: 'admin', label: 'Admin Hub', icon: ShieldAlert }]
+                : activeRole === 'admin'
+                ? [{ id: 'admin', label: 'Admin Hub', icon: ShieldAlert }]
+                : [{ id: 'maintenance', label: 'Society Hub 🏢', icon: Building2 }]
               ).map((tab) => {
                 const Icon = tab.icon;
                 const isSelected = activeTab === tab.id && !selectedProperty;
@@ -545,12 +563,23 @@ export default function App() {
                       <span>Admin Audit Panel</span>
                       <span className="text-[8px] px-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-sm font-mono uppercase">SWITCH</span>
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdown(false);
+                        handleSwitchRole('maintenance');
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                    >
+                      <span>Society Maintenance</span>
+                      <span className="text-[8px] px-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-sm font-mono uppercase font-bold">SWITCH</span>
+                    </button>
 
                     <button
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
-                        alert("OurHome Sign-out simulation: Client logged out securely. Re-logged instantly as Demo Administrator.");
+                        triggerToast("OurHome Sign-out simulation: Client logged out securely. Re-logged instantly as Demo Administrator.", "info");
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 border-t border-slate-100 mt-1"
                     >
@@ -581,11 +610,15 @@ export default function App() {
             {(activeRole === 'customer'
               ? [
                   { id: 'landing', label: 'Explore Home' },
-                  { id: 'listings', label: 'Buy &amp; Rent' }
+                  { id: 'listings', label: 'Buy &amp; Rent' },
+                  { id: 'decider', label: 'Decision Helper 🎯' },
+                  { id: 'services', label: 'Super Services ⚡' }
                 ]
               : activeRole === 'builder'
               ? [{ id: 'dashboard', label: 'Builder Desk' }]
-              : [{ id: 'admin', label: 'Admin Hub' }]
+              : activeRole === 'admin'
+              ? [{ id: 'admin', label: 'Admin Hub' }]
+              : [{ id: 'maintenance', label: 'Society Hub 🏢' }]
             ).map((tab) => (
               <button
                 key={tab.id}
@@ -653,6 +686,23 @@ export default function App() {
               />
             )}
 
+            {activeTab === 'services' && (
+              <SuperServicesView
+                properties={properties}
+                onNavigateToListings={handleNavigateToListingsWithFilters}
+                onSelectProperty={handleSelectProperty}
+                savedIds={savedIds}
+              />
+            )}
+
+            {activeTab === 'decider' && (
+              <SmartDeciderView
+                properties={properties}
+                onSelectProperty={handleSelectProperty}
+                onNavigateToListings={handleNavigateToListingsWithFilters}
+              />
+            )}
+
             {activeTab === 'dashboard' && (
               <BuilderPortalView
                 properties={properties}
@@ -677,6 +727,10 @@ export default function App() {
                 onResolveSupport={handleResolveSupportTicket}
                 eventLogs={eventLogs}
               />
+            )}
+
+            {activeTab === 'maintenance' && (
+              <MaintenanceManagementView />
             )}
           </>
         )}
@@ -713,7 +767,8 @@ export default function App() {
           {[
             { id: 'customer', label: 'Client App 🏡', color: 'hover:bg-emerald-500/10 text-emerald-400 border-emerald-500/35' },
             { id: 'builder', label: 'Builder Console 🏗️', color: 'hover:bg-sky-500/10 text-sky-400 border-sky-500/35' },
-            { id: 'admin', label: 'Admin Hub 🛡️', color: 'hover:bg-amber-500/10 text-amber-400 border-amber-500/35' }
+            { id: 'admin', label: 'Admin Hub 🛡️', color: 'hover:bg-amber-500/10 text-amber-400 border-amber-500/35' },
+            { id: 'maintenance', label: 'Society Hub 🏢', color: 'hover:bg-indigo-500/10 text-indigo-400 border-indigo-500/35' }
           ].map((role) => {
             const isCurrent = activeRole === role.id;
             return (
@@ -749,9 +804,55 @@ export default function App() {
         typingStates={chatTypingStates}
         onSendMessage={handleSendMessage}
         onSendTyping={handleSendTyping}
-        properties={properties}
-        onSelectProperty={handleSelectProperty}
       />
+
+      {/* Floating high-fidelity premium Toast notifications panel */}
+      {toasts.length > 0 && (
+        <div className="fixed top-20 right-4 sm:right-6 z-[9999] w-full max-w-sm pointer-events-none flex flex-col gap-2.5 px-4 animate-fade-in">
+          {toasts.map((toast) => {
+            const isSuccess = toast.type === 'success';
+            const isError = toast.type === 'error';
+            const isWarning = toast.type === 'warning';
+            
+            return (
+              <div
+                key={toast.id}
+                className="pointer-events-auto bg-slate-900/95 text-white border border-slate-800 backdrop-blur-md rounded-2xl p-4 shadow-2xl flex gap-3 items-start transition-all duration-300 max-w-full"
+                style={{
+                  boxShadow: '0 12px 32px -4px rgba(16, 185, 129, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <div className={`p-1.5 rounded-lg shrink-0 ${
+                  isSuccess ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                  isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                  isWarning ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                  'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                }`}>
+                  {isSuccess && <CheckCircle2 className="w-4 h-4" />}
+                  {isError && <ShieldAlert className="w-4 h-4" />}
+                  {isWarning && <ShieldAlert className="w-4 h-4" />}
+                  {toast.type === 'info' && <Sparkles className="w-4 h-4" />}
+                </div>
+                
+                <div className="flex-1 space-y-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-slate-400">
+                    {toast.type === 'success' ? 'Task Finalized' : toast.type === 'error' ? 'Security Alert' : 'System Information'}
+                  </span>
+                  <p className="text-xs font-semibold text-slate-100 leading-normal">{toast.message}</p>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+                  className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
     </div>
   );

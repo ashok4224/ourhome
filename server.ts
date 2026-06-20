@@ -1,18 +1,8 @@
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
-import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
 
-dotenv.config();
-
-const apiKey = process.env.GEMINI_API_KEY || '';
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
-
-// ESM path resolution helper since "type": "module" is enabled and we are running ESModules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ESM/CJS path resolution helper (guarded safely if needed, otherwise using process.cwd() for direct pathing)
 
 // In-memory data store for live real-time chats, invitations, and active states
 interface Message {
@@ -205,106 +195,6 @@ async function startServer() {
     typingStates = [];
     broadcast({ type: 'sync', messages, invitations, typingStates });
     res.json({ success: true, message: 'States fully purged' });
-  });
-
-  // Gemini AI-driven search endpoint with robust regex-based local fallback
-  app.post('/api/ai/search', async (req, res) => {
-    const { query, properties } = req.body;
-    if (!query || !properties) {
-      res.status(400).json({ error: 'Missing query or properties array' });
-      return;
-    }
-
-    if (ai) {
-      try {
-        const systemPrompt = `You are a premium real estate assistant for 'OurHome' in Hyderabad.
-Here is the list of current properties in Hyderabad:
-${JSON.stringify(properties, null, 2)}
-
-User Request: "${query}"
-
-Return a JSON array of matching property IDs and a brief custom recommendation rationale.
-Format:
-{
-  "matches": [
-    {
-      "id": "prop-1",
-      "rationale": "Reason why it matches the user request..."
-    }
-  ]
-}
-Return ONLY valid JSON. No markdown tags, no backticks, no code blocks.`;
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: systemPrompt,
-        });
-
-        const text = response.text || '';
-        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanText);
-        res.json(parsed);
-        return;
-      } catch (err) {
-        console.error('Gemini API call failed, falling back to local search:', err);
-      }
-    }
-
-    // Local smart regex-based fallback matching
-    const lowerQuery = query.toLowerCase();
-    const matches: any[] = [];
-
-    properties.forEach((p: any) => {
-      let score = 0;
-      let reasons: string[] = [];
-
-      if (p.subLocality && lowerQuery.includes(p.subLocality.toLowerCase())) {
-        score += 5;
-        reasons.push(`in ${p.subLocality}`);
-      }
-
-      if (p.rentOrBuy && lowerQuery.includes(p.rentOrBuy.toLowerCase())) {
-        score += 5;
-        reasons.push(`for ${p.rentOrBuy}`);
-      }
-
-      const bhkMatch = lowerQuery.match(/(\d)\s*bhk/);
-      if (bhkMatch && Number(bhkMatch[1]) === p.bedrooms) {
-        score += 4;
-        reasons.push(`${p.bedrooms} BHK`);
-      } else if (p.bedrooms && lowerQuery.includes(`${p.bedrooms} bedroom`)) {
-        score += 4;
-        reasons.push(`${p.bedrooms} Bedroom`);
-      }
-
-      if (p.amenities && Array.isArray(p.amenities)) {
-        p.amenities.forEach((a: string) => {
-          if (a && lowerQuery.includes(a.toLowerCase())) {
-            score += 2;
-            reasons.push(a);
-          }
-        });
-      }
-
-      if (p.furnishing && lowerQuery.includes(p.furnishing.toLowerCase())) {
-        score += 3;
-        reasons.push(p.furnishing);
-      }
-
-      if (p.facing && lowerQuery.includes(p.facing.toLowerCase())) {
-        score += 3;
-        reasons.push(`${p.facing} Facing`);
-      }
-
-      if (score > 0) {
-        matches.push({
-          id: p.id,
-          rationale: `Fits criteria: ${reasons.join(', ')} matching your preferences.`
-        });
-      }
-    });
-
-    res.json({ matches: matches.slice(0, 3) });
   });
 
   // Vite middleware integration for asset pipelines

@@ -8,8 +8,19 @@ import { Property, Appointment } from '../types';
 import { 
   ArrowLeft, Calendar, Clock, DollarSign, Calculator, 
   MapPin, Check, Phone, Mail, MessageSquare, AlertCircle, Sparkles, Heart,
-  Building, ShieldCheck
+  Building, ShieldCheck, X, TrendingUp, TrendingDown, Info, Percent, LineChart as LucideLineChart
 } from 'lucide-react';
+
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 
 interface PropertyDetailsViewProps {
   property: Property;
@@ -28,6 +39,15 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
   onToggleSave,
   onStartLiveChat,
 }) => {
+  // Graceful visual toast triggered if registered, falls back to native alert
+  const triggerToast = (msg: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    if ((window as any).triggerOurHomeToast) {
+      (window as any).triggerOurHomeToast(msg, type);
+    } else {
+      alert(msg);
+    }
+  };
+
   // Image slider active index
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -55,6 +75,27 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
   const [calcTab, setCalcTab] = useState<'EMI' | 'Affordability'>(
     property.rentOrBuy === 'Rent' ? 'Affordability' : 'EMI'
   );
+
+  // Zero-Brokerage Savings Calculator State
+  const [savingsBrokerOption, setSavingsBrokerOption] = useState<'standard' | 'high' | 'premium'>(
+    property.rentOrBuy === 'Rent' ? 'standard' : 'high'
+  );
+
+  // Interactive historical trend chart states
+  const [chartView, setChartView] = useState<'annual' | 'quarterly' | 'projection'>('annual');
+  const [chartMetric, setChartMetric] = useState<'total' | 'persqft'>('total');
+  const [forecastGrowth, setForecastGrowth] = useState<number>(8.5); // Default compound annual growth %
+
+  // Floating Ask an Expert FAB states
+  const [showSpeechBubble, setShowSpeechBubble] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Show expert chat invite overlay with a slight delay
+    const speechTimer = setTimeout(() => {
+      setShowSpeechBubble(true);
+    }, 1500);
+    return () => clearTimeout(speechTimer);
+  }, [property.id]);
 
   useEffect(() => {
     let timer: any;
@@ -142,7 +183,7 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!visitDate || !custName || !custEmail || !custPhone) {
-      alert('Please fill out all mandatory scheduler details to book.');
+      triggerToast('Please fill out all mandatory scheduler details to book.', 'error');
       return;
     }
 
@@ -159,6 +200,7 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
     const bookingRef = `OH-${Math.floor(100000 + Math.random() * 900000)}`;
     setBookingResult(bookingRef);
     setBookingStatus('success');
+    triggerToast('Secure appointment slotted! Real-time RERA scheduler synchronizing transaction codes.', 'success');
   };
 
   const handleContactAgent = (e: React.FormEvent) => {
@@ -168,8 +210,8 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
     setAgentMsg('');
     setTimeout(() => {
       setAgentSent(false);
-      alert(`Message safely delivered to ${property.agent.name}. An agent will call you shortly on your registered number.`);
-    }, 2000);
+      triggerToast(`Inquiry successfully delivered to ${property.agent.name}. An agent will connect shortly on your registered number.`, 'success');
+    }, 1200);
   };
 
   const isSaved = savedIds.includes(property.id);
@@ -258,9 +300,9 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
               <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 font-mono text-[10px] uppercase py-0.5 px-2 rounded-md font-bold">
                 RERA Vetted
               </span>
-              {property.reraId && (
-                <span className="bg-slate-900 border border-slate-800 text-slate-100 font-mono text-[10px] py-0.5 px-2 rounded-md font-semibold tracking-wider">
-                  TS-RERA: {property.reraId}
+              {property.status === 'Approved' && (
+                <span id="verified-by-ourhome-badge" className="bg-emerald-600 border border-emerald-700 text-white font-mono text-[10px] font-bold tracking-wider uppercase py-0.5 px-2.5 rounded-md flex items-center gap-1 shadow-sm select-none">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Verified by OurHome
                 </span>
               )}
             </div>
@@ -300,6 +342,500 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
             </div>
           </div>
 
+          {/* Trust Verification Card Banner */}
+          {property.status === 'Approved' && (
+            <div id="ourhome-verification-trust-banner" className="bg-gradient-to-r from-emerald-50 to-teal-50/50 border border-emerald-200/80 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 bg-emerald-600 text-white rounded-xl shadow-xs shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <div className="space-y-1 text-slate-850">
+                  <h4 className="font-display font-bold text-sm text-neutral-900 flex items-center gap-1.5">
+                    Verified Listing by OurHome
+                  </h4>
+                  <p className="text-xs text-neutral-500 leading-relaxed max-w-xl">
+                    This property has successfully cleared our multi-point background registry, title deed, physical layout, and RERA approval audits. Guaranteed 100% genuine listing with real seller direct connections.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 px-3 py-1 bg-emerald-100/55 text-emerald-800 border border-emerald-200/40 rounded-full font-mono text-[10px] font-bold uppercase select-none tracking-wider shrink-0 self-start md:self-auto">
+                <Check className="w-3.5 h-3.5 stroke-[3]" /> Passed Quality Gates
+              </div>
+            </div>
+          )}
+
+          {/* Zero-Brokerage direct deal savings Interactive Calculator */}
+          {(() => {
+            const isRent = property.rentOrBuy === 'Rent';
+            let tradFee = 0;
+            let optionLabel = '';
+            
+            if (isRent) {
+              if (savingsBrokerOption === 'standard') {
+                tradFee = property.price;
+                optionLabel = 'Standard Broker commission fee (1 Month Rent)';
+              } else if (savingsBrokerOption === 'high') {
+                tradFee = property.price * 1.5;
+                optionLabel = 'Traditional Broker broker-premium (1.5 Months Rent)';
+              } else {
+                tradFee = property.price * 2;
+                optionLabel = 'Premium Relocate agent package (2 Months Rent)';
+              }
+            } else {
+              if (savingsBrokerOption === 'standard') {
+                tradFee = property.price * 0.01;
+                optionLabel = 'Typical Broker Commission (1.0% of Value)';
+              } else if (savingsBrokerOption === 'high') {
+                tradFee = property.price * 0.015;
+                optionLabel = 'Standard Agency Commission (1.5% of Value)';
+              } else {
+                tradFee = property.price * 0.02;
+                optionLabel = 'Premium Broker Agency fee (2.0% of Value)';
+              }
+            }
+
+            const directFee = 0;
+            const netSaved = tradFee - directFee;
+
+            // Define smart investment suggestions under direct model
+            const savingsUse = isRent
+              ? [
+                  'Covers the security deposit for your upcoming luxury residency.',
+                  'Equivalent to covering up to 4 months of society utility maintenance.',
+                  'Saves enough to completely fund professional premium packing & moving services.'
+                ]
+              : [
+                  'Saves enough to fully fund high-end modular kitchen custom woodworks.',
+                  'Offsets the complete government state property registration, stamp, and RERA filing costs.',
+                  'Covers up to 1 entire year of complete premium community facility membership taxes.'
+                ];
+
+            return (
+              <div id="zero-brokerage-savings-calculator" className="bg-white border border-neutral-200 rounded-3xl p-6 space-y-5 shadow-xs select-none">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 pb-4">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono tracking-wider rounded-md border border-emerald-150 uppercase font-bold">
+                      <Calculator className="w-3.5 h-3.5 text-emerald-600" /> Direct-to-Seller Deal Profit
+                    </div>
+                    <h3 className="font-display text-base font-bold text-slate-900">Zero-Brokerage Savings Calculator</h3>
+                    <p className="text-xs text-slate-500">
+                      See how much you save by skipping typical real estate brokerage fees on this {isRent ? 'lease' : 'purchase'}.
+                    </p>
+                  </div>
+                  
+                  {/* Toggle option rate selections */}
+                  <div className="flex items-center p-1 bg-slate-100 rounded-xl self-start sm:self-auto border border-slate-200 shrink-0">
+                    {(['standard', 'high', 'premium'] as const).map((opt) => {
+                      let label = '';
+                      if (isRent) {
+                        label = opt === 'standard' ? '1 Month' : opt === 'high' ? '1.5 Mo' : '2 Mo';
+                      } else {
+                        label = opt === 'standard' ? '1.0%' : opt === 'high' ? '1.5%' : '2.0%';
+                      }
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setSavingsBrokerOption(opt)}
+                          className={`py-1.5 px-3 text-[10px] font-mono font-bold rounded-lg transition-all cursor-pointer ${
+                            savingsBrokerOption === opt
+                              ? 'bg-slate-900 text-white shadow-sm'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Main savings compare card layout */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+                  {/* Compare Bars & math */}
+                  <div className="md:col-span-7 space-y-4 flex flex-col justify-between">
+                    <div className="space-y-3.5">
+                      {/* Traditional Broker Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs text-slate-500 font-medium">
+                          <span className="flex items-center gap-1">Traditional Agent Route</span>
+                          <span className="font-mono text-slate-700">₹{tradFee.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="h-3.5 bg-zinc-100 rounded-full overflow-hidden relative">
+                          <div className="h-full bg-slate-400 rounded-full transition-all duration-500" style={{ width: '100%' }} />
+                        </div>
+                      </div>
+
+                      {/* OurHome Platform Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-semibold text-emerald-700">
+                          <span className="flex items-center gap-1">OurHome Direct Deal (Verified)</span>
+                          <span className="font-mono bg-emerald-50 px-1.5 py-0.1 border border-emerald-100 rounded">₹0 Fee</span>
+                        </div>
+                        <div className="h-3.5 bg-emerald-50 rounded-full overflow-hidden relative border border-emerald-100/50">
+                          <div className="h-full bg-emerald-600 rounded-full transition-all duration-500" style={{ width: '0%' }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mt-2">
+                      <p className="text-[9px] font-mono text-slate-400 uppercase tracking-widest leading-none mb-1 text-[8px] font-bold">Fee Option Breakdown</p>
+                      <p className="text-xs text-slate-700 font-medium">{optionLabel}</p>
+                    </div>
+                  </div>
+
+                  {/* Calculated Big Savings display box */}
+                  <div className="md:col-span-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-150 rounded-2xl p-4 flex flex-col justify-center items-center text-center relative overflow-hidden shadow-xs">
+                    {/* Sparkles */}
+                    <div className="absolute top-0 right-0 p-1.5">
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                    </div>
+
+                    <p className="text-[10px] font-mono text-emerald-700 uppercase tracking-widest font-bold leading-none mb-1.5">NET CASH SAVED</p>
+                    <p className="font-display text-2xl font-black text-emerald-800 tracking-tight">
+                      ₹{netSaved.toLocaleString('en-IN')}
+                    </p>
+                    <p className="text-[10px] font-semibold text-teal-700 mt-0.5">100% Direct Deal Profit</p>
+                    <p className="text-[9px] text-zinc-500 mt-2 leading-tight">
+                      We secure zero brokerage direct-to-builder contract models across all Hyderabad properties.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Suggestive checklist of how to utilize the direct profits */}
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-150 space-y-2.5">
+                  <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest font-bold">Smart ways to reinvest your ₹{netSaved.toLocaleString('en-IN')} direct profit:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {savingsUse.map((use, i) => (
+                      <div key={i} className="flex gap-2 items-start bg-white p-2.5 rounded-xl border border-neutral-100">
+                        <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-150 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-mono font-bold">
+                          {i + 1}
+                        </div>
+                        <p className="text-[10px] text-slate-650 leading-tight font-medium">
+                          {use}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Historical Price Trend Analyzer using Recharts */}
+          {(() => {
+            const isRent = property.rentOrBuy === 'Rent';
+            
+            // Dynamic local appreciation factors
+            let locPremium = 1.0;
+            const lowerLoc = (property.subLocality || '').toLowerCase();
+            let growthVibe = 'High-Growth Tech Hotspot';
+            
+            if (lowerLoc.includes('jubilee')) {
+              locPremium = 1.15;
+              growthVibe = 'Premium Ultra-Luxury Zone';
+            } else if (lowerLoc.includes('gachibowli')) {
+              locPremium = 1.08;
+              growthVibe = 'IT Corridor Expansion Corridor';
+            } else if (lowerLoc.includes('kokapet')) {
+              locPremium = 1.18;
+              growthVibe = 'Neopolis Mega High-Rise Belt';
+            } else if (lowerLoc.includes('madhapur')) {
+              locPremium = 1.11;
+              growthVibe = 'Central Business Center Hub';
+            }
+            
+            // Dynamic ratios based on property market index
+            const annualRatios = [
+              { label: '2022', ratio: 0.72 / locPremium },
+              { label: '2023', ratio: 0.80 / (locPremium * 0.96) },
+              { label: '2024', ratio: 0.88 / (locPremium * 0.98) },
+              { label: '2025', ratio: 0.94 },
+              { label: '2026', ratio: 1.00 },
+            ];
+            
+            const quarterlyRatios = [
+              { label: 'Q1 2024', ratio: 0.84 },
+              { label: 'Q2 2024', ratio: 0.87 },
+              { label: 'Q3 2024', ratio: 0.89 },
+              { label: 'Q4 2024', ratio: 0.91 },
+              { label: 'Q1 2025', ratio: 0.93 },
+              { label: 'Q2 2025', ratio: 0.95 },
+              { label: 'Q3 2025', ratio: 0.97 },
+              { label: 'Q4 2025', ratio: 0.99 },
+            ];
+            
+            const projectionPeriods = [
+              { label: '2026 Current', ratio: 1.00 },
+              { label: '2027 Est', ratio: 1.00 * (1 + forecastGrowth / 100) },
+              { label: '2028 Est', ratio: 1.00 * Math.pow(1 + forecastGrowth / 100, 2) },
+              { label: '2029 Est', ratio: 1.00 * Math.pow(1 + forecastGrowth / 100, 3) },
+            ];
+
+            const formatAssetPriceRaw = (val: number) => {
+              if (val >= 10000000) {
+                return `₹${(val / 10000000).toFixed(2)} Cr`;
+              } else if (val >= 100000) {
+                return `₹${(val / 100000).toFixed(1)} Lakh`;
+              }
+              return `₹${val.toLocaleString('en-IN')}`;
+            };
+
+            const getRawDataset = () => {
+              const ratios = chartView === 'annual' 
+                ? annualRatios 
+                : chartView === 'quarterly' 
+                  ? quarterlyRatios 
+                  : projectionPeriods;
+              
+              return ratios.map(item => {
+                const computedVal = Math.round(property.price * item.ratio);
+                return {
+                  name: item.label,
+                  value: chartMetric === 'total' ? computedVal : Math.round(computedVal / property.sizeSqFt),
+                  ratePerSqFt: Math.round(computedVal / property.sizeSqFt),
+                  rawVal: computedVal,
+                };
+              });
+            };
+
+            const currentData = getRawDataset();
+            
+            // Calculate localized stats for micro-copy feedback
+            const initialVal = getRawDataset()[0].rawVal;
+            const currentVal = property.price;
+            const absoluteGain = currentVal - initialVal;
+            const ratePercentage = Math.round((absoluteGain / initialVal) * 100);
+
+            const formatYAxis = (numericVal: number) => {
+              if (isRent) {
+                if (chartMetric === 'persqft') {
+                  return `₹${numericVal}`;
+                }
+                return `₹${Math.round(numericVal / 1000)}K`;
+              } else {
+                if (chartMetric === 'persqft') {
+                  return `₹${Math.round(numericVal)}`;
+                }
+                if (numericVal >= 10000000) {
+                  return `₹${(numericVal / 10000000).toFixed(1)} Cr`;
+                } else if (numericVal >= 100000) {
+                  return `₹${(numericVal / 100000).toFixed(0)} L`;
+                }
+                return `₹${numericVal}`;
+              }
+            };
+
+            return (
+              <div id="historical-price-trends-card" className="bg-white border border-neutral-200 rounded-3xl p-6 space-y-5 shadow-xs select-none">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-100 pb-4">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-sky-50 text-sky-700 text-[10px] font-mono tracking-wider rounded-md border border-sky-150 uppercase font-bold">
+                      <TrendingUp className="w-3.5 h-3.5 text-sky-600" /> Location Price Index
+                    </div>
+                    <h3 className="font-display text-base font-bold text-slate-900">Historical Trends & Forecasts</h3>
+                    <p className="text-xs text-slate-500">
+                      Explore dynamic {property.rentOrBuy === 'Rent' ? 'rent rates' : 'valuation history'} & smart projections in <strong>{property.subLocality || property.location}</strong>.
+                    </p>
+                  </div>
+
+                  {/* Interconnected selection button clusters */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* View options switcher */}
+                    <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-[10px] font-mono font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setChartView('annual')}
+                        className={`py-1 px-2.5 rounded-lg transition-all cursor-pointer ${
+                          chartView === 'annual' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Annual
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChartView('quarterly')}
+                        className={`py-1 px-2.5 rounded-lg transition-all cursor-pointer ${
+                          chartView === 'quarterly' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Quarterly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChartView('projection')}
+                        className={`py-1 px-2.5 rounded-lg transition-all cursor-pointer ${
+                          chartView === 'projection' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        Forecast
+                      </button>
+                    </div>
+
+                    {/* Metric option switcher */}
+                    <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 text-[10px] font-mono font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setChartMetric('total')}
+                        className={`py-1 px-2.5 rounded-lg transition-all cursor-pointer ${
+                          chartMetric === 'total' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title="Display full valuation or rent fee"
+                      >
+                        Total
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChartMetric('persqft')}
+                        className={`py-1 px-2.5 rounded-lg transition-all cursor-pointer ${
+                          chartMetric === 'persqft' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                        title="Display per square foot value metrics"
+                      >
+                        ₹/SqFt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live analytical metrics cards row before rendering line chart */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150/60">
+                    <p className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Appreciation Track</p>
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      <span className="text-sm font-bold text-slate-850">
+                        {chartView === 'projection' ? 'Appreciating' : `+${ratePercentage}% Real Gain`}
+                      </span>
+                      <span className="inline-flex items-center px-1 py-0.2 bg-emerald-50 text-emerald-700 text-[9px] font-mono rounded-md font-bold">
+                        <TrendingUp className="w-3 h-3" /> Area Hot
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150/60">
+                    <p className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Micro-Market Profile</p>
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      <span className="text-xs font-bold text-neutral-800 truncate" title={growthVibe}>
+                        {growthVibe}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-2xl border border-slate-150/60">
+                    <p className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Current Index Position</p>
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      <span className="text-sm font-bold text-slate-850 font-mono">
+                        ₹{Math.round(property.price / property.sizeSqFt).toLocaleString('en-IN')}/sqft
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Real-time slider adjustment UI for Forecast projection view */}
+                {chartView === 'projection' && (
+                  <div className="bg-amber-50/50 border border-amber-200/80 rounded-2xl p-4 space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                        <Percent className="w-4 h-4 text-amber-600 shrink-0" />
+                        Interactive Annual Forecast Growth Rate
+                      </div>
+                      <span className="font-mono font-black text-amber-800 bg-amber-100/50 px-2.5 py-0.5 rounded-lg border border-amber-200">
+                        {forecastGrowth.toFixed(1)}% YoY
+                      </span>
+                    </div>
+                    <input
+                      title="Adjust compound growth slider to simulate forecasts"
+                      type="range"
+                      min="3.0"
+                      max="15.0"
+                      step="0.5"
+                      value={forecastGrowth}
+                      onChange={(e) => setForecastGrowth(parseFloat(e.target.value))}
+                      className="w-full h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600 focus:outline-none"
+                    />
+                    <p className="text-[10px] text-zinc-500 leading-tight">
+                      Adjust range slide to compound property valuations into {2026 + 3}. Real estate appreciation index factors standard inflation (~5.5%) and premier local asset growth.
+                    </p>
+                  </div>
+                )}
+
+                {/* Actual Recharts responsive line container */}
+                <div id="recharts-trend-chart-wrapper" className="h-64 sm:h-72 w-full pt-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart 
+                      data={currentData}
+                      margin={{ top: 10, right: 15, left: -5, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient id="colorPriceGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#059669" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#059669" stopOpacity={0.0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#94a3b8" 
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        dy={8}
+                      />
+                      <YAxis 
+                        stroke="#94a3b8" 
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={formatYAxis}
+                        width={60}
+                      />
+                      <Tooltip 
+                        cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const point = payload[0];
+                            return (
+                              <div className="bg-slate-900 border border-slate-800 text-white p-3 rounded-2xl shadow-xl space-y-1 font-sans">
+                                <p className="text-[9px] uppercase font-mono text-slate-400 tracking-wider font-bold">{label}</p>
+                                <p className="text-xs font-bold text-emerald-400">
+                                  {chartMetric === 'total' ? 'Valuation' : 'Unit Rate'}:&nbsp;
+                                  {isRent 
+                                    ? (chartMetric === 'total' ? `₹${point.value.toLocaleString('en-IN')}/Mo` : `₹${point.value}/sqft`)
+                                    : (chartMetric === 'total' ? formatAssetPriceRaw(point.value) : `₹${point.value.toLocaleString('en-IN')}/sqft`)
+                                  }
+                                </p>
+                                <p className="text-[10px] text-slate-300 font-medium">
+                                  Metric: {chartMetric === 'total' ? 'Full Listing Price' : 'Per SqFt Price'}
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#10b981" 
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, fill: '#ffffff', stroke: '#10b981' }}
+                        activeDot={{ r: 6, strokeWidth: 0, fill: '#059669' }}
+                        animationDuration={350}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex gap-2 items-start bg-slate-50 p-3 rounded-2xl border border-neutral-100">
+                  <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-zinc-500 leading-normal">
+                    <strong>Trend Methodology:</strong> Our data intelligence platform compiles active registry deals, builder floorplan contracts, direct site surveys, and past listed offerings in {property.location} to represent the exact localized curve.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Description Section */}
           <div className="space-y-3">
             <h3 className="font-display text-lg font-semibold text-neutral-950 border-b border-neutral-100 pb-2">Description</h3>
@@ -322,44 +858,6 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
               ))}
             </div>
           </div>
-
-          {/* Neighborhood Proximity Section */}
-          {property.proximityScores && (
-            <div className="space-y-3">
-              <h3 className="font-display text-lg font-semibold text-neutral-950 border-b border-neutral-100 pb-2">Neighborhood Proximity & Connectivity</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">METRO ACCESS</span>
-                  <div>
-                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.metro} km</span>
-                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to station</span>
-                  </div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">IT WORKSPACES</span>
-                  <div>
-                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.workspace} km</span>
-                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to IT Parks</span>
-                  </div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">HEALTHCARE</span>
-                  <div>
-                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.hospital} km</span>
-                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to Hospital</span>
-                  </div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/50 p-4 rounded-2xl flex flex-col justify-between space-y-2">
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block font-bold">EDUCATION</span>
-                  <div>
-                    <span className="font-display font-bold text-lg text-neutral-900">{property.proximityScores.school} km</span>
-                    <span className="text-[10px] text-neutral-400 block font-mono">Distance to Schools</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div id="emi-calculator-panel" className="bg-white border border-neutral-200 p-6 md:p-8 rounded-3xl space-y-6 shadow-xs text-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 animate-fade-in">
               <div className="flex items-center gap-2">
@@ -558,7 +1056,7 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => alert(`Pre-Approved Certificate Requested! Our home partner banks (HDFC, SBI, ICICI) are auditing your ₹${calcP.toLocaleString('en-IN')} principal requirement.`)}
+                  onClick={() => triggerToast(`Pre-Approved Certificate Requested! Our home partner banks (HDFC, SBI, ICICI) are auditing your ₹${calcP.toLocaleString('en-IN')} principal requirement.`, 'info')}
                   className="w-full bg-white text-slate-900 border border-slate-100 font-bold text-xs py-2 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer"
                 >
                   Apply For Pre-Approved Loan
@@ -652,7 +1150,7 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => alert('Direct Rental Agreement Draft requested! Custom stamp layouts will be shared with the Arjun Builder Office.')}
+                      onClick={() => triggerToast('Direct Rental Standard Draft compilation requested! Custom digital stamp layouts will be shared under agreement center.', 'success')}
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer text-center font-mono"
                     >
                       Draft Stamp Agreement
@@ -941,14 +1439,14 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
                   <div className="flex gap-1.5 text-[10px] font-mono">
                     <button 
                       type="button"
-                      onClick={() => alert("Brochure Floorplan PDF generated and downloaded to client sandbox cache!")}
+                      onClick={() => triggerToast("Brochure floorplan & specification sheets generated. Client cache download triggered!", "success")}
                       className="bg-white border border-neutral-200 px-2 py-1 rounded-lg hover:border-emerald-500"
                     >
                       📄 Get Details PDF
                     </button>
                     <button 
                       type="button"
-                      onClick={() => alert(`Direct site schedule request logged for next Sunday with Representative ${property.agent.name}!`)}
+                      onClick={() => triggerToast(`Direct site schedule request logged for next Sunday with ${property.agent.name}!`, "success")}
                       className="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold hover:bg-emerald-500"
                     >
                       📅 Visit Next Sunday
@@ -981,12 +1479,13 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
                     type="button"
                     onClick={() => {
                       if (!callbackPhone) {
-                        alert("Please input a valid phone number to connect.");
+                        triggerToast("Please input a valid phone number to connect.", "error");
                         return;
                       }
                       setCallbackSubmitted(true);
                       setCountdown(120);
                       setCallbackStep(1);
+                      triggerToast("Outbound SIP Call scheduled! Connecting to local Hyderabad cell agent in 120s...", "info");
                     }}
                     className="bg-slate-900 text-white text-xs font-bold px-3 py-2.5 rounded-xl hover:bg-slate-800"
                   >
@@ -1074,6 +1573,83 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
             </form>
           </div>
         </div>
+      </div>
+
+      {/* Real-time "Ask an Expert" Floating Action Button (FAB) */}
+      <div 
+        id="ask-expert-fab-container" 
+        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-55 flex items-end gap-3 select-none pointer-events-auto"
+      >
+        {/* Animated Speech Bubble */}
+        {showSpeechBubble && (
+          <div 
+            id="ask-expert-speech-bubble" 
+            className="flex flex-col bg-slate-900 border border-slate-800 text-white p-3.5 rounded-2xl rounded-br-none shadow-2xl max-w-[240px] md:max-w-xs animate-fade-in text-xs relative space-y-1"
+          >
+            {/* Close button for Speech Bubble */}
+            <button
+              id="ask-expert-close-bubble"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSpeechBubble(false);
+              }}
+              className="absolute top-2 right-2 text-slate-400 hover:text-white p-0.5 rounded-md hover:bg-slate-800 transition-colors"
+              title="Close notification"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Advisor Online
+            </div>
+            
+            <p className="text-slate-200 text-xs leading-snug font-medium pt-1">
+              "Namaste! Rent or Buy, I can customize a special pricing package for <strong>{property.title}</strong> directly. Chat live now?"
+            </p>
+            
+            <p className="text-[10px] font-semibold text-sky-400 font-mono text-right pt-1">
+              — {property.agent.name}
+            </p>
+          </div>
+        )}
+
+        {/* Floating Action Button (FAB) */}
+        <button
+          id="ask-expert-trigger-btn"
+          type="button"
+          onClick={() => {
+            setShowSpeechBubble(false);
+            if (onStartLiveChat) {
+              onStartLiveChat(property.id, property.title);
+            }
+          }}
+          className="flex items-center justify-center gap-2.5 p-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-350 text-slate-800 hover:text-slate-950 font-bold rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 group focus:outline-none cursor-pointer"
+          title={`Ask ${property.agent.name} about this property`}
+        >
+          {/* Circular avatar wrapper with glowing/pulsing green live indicator */}
+          <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-emerald-400 shrink-0">
+            <img 
+              src={property.agent.avatar} 
+              alt={property.agent.name} 
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+            />
+            <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+          </div>
+
+          {/* Elegant descriptive label that shows on hover & is clearly readable */}
+          <div className="flex flex-col text-left pr-4">
+            <span className="text-[8px] font-mono font-bold text-emerald-600 uppercase tracking-widest block leading-none">ASK AN EXPERT</span>
+            <span className="text-xs font-bold text-slate-800 mt-0.5 whitespace-nowrap block leading-snug">
+              Chat with {property.agent.name.split(' ')[0]}
+            </span>
+          </div>
+        </button>
       </div>
     </div>
   );

@@ -36,6 +36,15 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
   onOpenChat,
   onSwitchToClientWithFilter,
 }) => {
+  // Graceful visual toast helper
+  const triggerToast = (msg: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    if ((window as any).triggerOurHomeToast) {
+      (window as any).triggerOurHomeToast(msg, type);
+    } else {
+      alert(msg);
+    }
+  };
+
   // Arjun's portfolio filter. Arjun owns 'prop-1' and 'prop-4' in the default list
   const arjunsProperties = useMemo(() => {
     return properties.filter((p) => p.agent.name === 'Arjun Nandan');
@@ -91,7 +100,7 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !location.trim() || !description.trim()) {
-      alert('Please fill out all core fields.');
+      triggerToast('Please fill out all core fields.', 'error');
       return;
     }
 
@@ -121,6 +130,8 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
       }
     });
+
+    triggerToast(`Listing "${title}" posted successfully to direct Hyderabad database!`, 'success');
 
     setLastCreatedTitle(title);
     setFormSuccess(true);
