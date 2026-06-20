@@ -17,6 +17,7 @@ import { LiveChatDrawer } from './components/LiveChatDrawer';
 import { MaintenanceManagementView } from './components/MaintenanceManagementView';
 import { SuperServicesView } from './components/SuperServicesView';
 import { SmartDeciderView } from './components/SmartDeciderView';
+import { CustomerDashboardView } from './components/CustomerDashboardView';
 import { 
   Building2, Sliders, Bell, User, Clock, Heart, ShieldAlert,
   Menu, X, Sparkles, LayoutDashboard, Compass, Layers, CheckCircle2, ChevronDown,
@@ -292,6 +293,33 @@ export default function App() {
     addTelemetryLog(`Withdrew listing: Removed "${titleToRemove}" from portfolio database references.`);
   };
 
+  const handleAddInquiry = (inq: Omit<Inquiry, 'id' | 'status' | 'date'>) => {
+    const newInq: Inquiry = {
+      ...inq,
+      id: `inq-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date().toISOString().split('T')[0],
+      status: 'Received',
+    };
+    setInquiries((prev) => [newInq, ...prev]);
+    // Also increment inquiries counter on the corresponding property
+    setProperties((pList) => pList.map((p) => p.id === inq.propertyId ? { ...p, inquiries: p.inquiries + 1 } : p));
+    addTelemetryLog(`Registered Inquiry: ${inq.customerName} sent an inquiry for "${inq.propertyTitle}".`);
+  };
+
+  const handleRemoveInquiry = (id: string) => {
+    const targetInq = inquiries.find((i) => i.id === id);
+    if (targetInq) {
+      setProperties((pList) => pList.map((p) => p.id === targetInq.propertyId ? { ...p, inquiries: Math.max(0, p.inquiries - 1) } : p));
+    }
+    setInquiries((prev) => prev.filter((i) => i.id !== id));
+    addTelemetryLog(`Withdrew Inquiry: Inquiry folder #${id.toUpperCase()} removed from registry.`);
+  };
+
+  const handleUpdateInquiryStatus = (id: string, newStatus: Inquiry['status']) => {
+    setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status: newStatus } : i));
+    addTelemetryLog(`Milestone Update: Inquiry #${id.toUpperCase()} marked as "${newStatus}".`);
+  };
+
   const handleApproveProperty = (id: string) => {
     setProperties((prev) => 
       prev.map((p) => p.id === id ? { ...p, status: 'Approved' } : p)
@@ -414,6 +442,7 @@ export default function App() {
                 { id: 'listings', label: 'Buy &amp; Rent', icon: Sliders },
                 { id: 'decider', label: 'Decision Helper 🎯', icon: CheckSquare },
                 { id: 'services', label: 'Super Services ⚡', icon: Sparkles },
+                { id: 'customer-dashboard', label: 'My Inquiries 📑', icon: Clock },
                 { id: 'dashboard', label: 'Builder Desk 🏗️', icon: LayoutDashboard },
                 { id: 'maintenance', label: 'Society Hub 🏢', icon: Building2 }
               ].map((tab) => {
@@ -571,12 +600,23 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
+                        handleQuickTabSelect('customer-dashboard');
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                    >
+                      <span>My Inquiries Tracker</span>
+                      <span className="text-[8px] px-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-sm font-mono uppercase">New</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdown(false);
                         handleQuickTabSelect('dashboard');
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
                     >
                       <span>Post / Edit Listings</span>
-                      <span className="text-[8px] px-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-sm font-mono uppercase">Go</span>
+                      <span className="text-[8px] px-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-sm font-mono uppercase font-bold">Go</span>
                     </button>
                     <button
                       type="button"
@@ -627,6 +667,7 @@ export default function App() {
               { id: 'listings', label: 'Buy &amp; Rent' },
               { id: 'decider', label: 'Decision Helper 🎯' },
               { id: 'services', label: 'Super Services ⚡' },
+              { id: 'customer-dashboard', label: 'My Inquiries 📑' },
               { id: 'dashboard', label: 'Builder Desk 🏗️' },
               { id: 'maintenance', label: 'Society Hub 🏢' }
             ].map((tab) => (
@@ -671,6 +712,7 @@ export default function App() {
             savedIds={savedIds}
             onToggleSave={handleToggleSaveProperty}
             onStartLiveChat={handleStartLiveChat}
+            onAddInquiry={handleAddInquiry}
           />
         ) : (
           /* Normal Tab routers */
@@ -710,6 +752,18 @@ export default function App() {
                 properties={properties}
                 onSelectProperty={handleSelectProperty}
                 onNavigateToListings={handleNavigateToListingsWithFilters}
+              />
+            )}
+
+            {activeTab === 'customer-dashboard' && (
+              <CustomerDashboardView
+                inquiries={inquiries}
+                properties={properties}
+                onAddInquiry={handleAddInquiry}
+                onRemoveInquiry={handleRemoveInquiry}
+                onUpdateInquiryStatus={handleUpdateInquiryStatus}
+                onSelectProperty={handleSelectProperty}
+                triggerToast={triggerToast}
               />
             )}
 

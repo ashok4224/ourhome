@@ -32,6 +32,7 @@ interface PropertyDetailsViewProps {
   savedIds: string[];
   onToggleSave: (id: string) => void;
   onStartLiveChat?: (propertyId: string, propertyTitle: string) => void;
+  onAddInquiry?: (inq: { propertyId: string; propertyTitle: string; customerName: string; customerEmail: string; customerPhone: string; message: string; }) => void;
 }
 
 export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
@@ -41,6 +42,7 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
   savedIds,
   onToggleSave,
   onStartLiveChat,
+  onAddInquiry,
 }) => {
   // Graceful visual toast triggered if registered, falls back to native alert
   const triggerToast = (msg: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
@@ -213,6 +215,19 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
     e.preventDefault();
     if (!agentMsg.trim()) return;
     setAgentSent(true);
+    
+    if (onAddInquiry) {
+      onAddInquiry({
+        propertyId: property.id,
+        propertyTitle: property.title,
+        customerName: 'Premium Client',
+        customerEmail: 'elite.client@hyderabad.in',
+        customerPhone: '+91 91000 12345',
+        message: agentMsg,
+      });
+    }
+
+    const savedMsg = agentMsg;
     setAgentMsg('');
     setTimeout(() => {
       setAgentSent(false);

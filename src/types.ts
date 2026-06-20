@@ -27,6 +27,7 @@ export interface Property {
   views: number;
   inquiries: number;
   featured?: boolean;
+  tags?: string[];
 }
 
 export interface Appointment {
@@ -50,7 +51,7 @@ export interface Inquiry {
   customerPhone: string;
   message: string;
   date: string;
-  status: 'Received' | 'Answered';
+  status: 'Received' | 'Under Review' | 'Contacted' | 'Answered';
 }
 
 export interface SupportRequest {

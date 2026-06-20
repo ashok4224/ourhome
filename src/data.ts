@@ -19,6 +19,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'East',
     status: 'Approved',
     featured: true,
+    tags: ['Luxury', 'Family-Friendly'],
     views: 1240,
     inquiries: 18,
     images: [
@@ -58,6 +59,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'North-East',
     status: 'Approved',
     featured: true,
+    tags: ['Luxury', 'Family-Friendly'],
     views: 940,
     inquiries: 11,
     images: [
@@ -95,6 +97,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'West',
     status: 'Approved',
     featured: false,
+    tags: ['Budget'],
     views: 450,
     inquiries: 8,
     images: [
@@ -130,6 +133,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'North',
     status: 'Approved',
     featured: true,
+    tags: ['Luxury'],
     views: 780,
     inquiries: 14,
     images: [
@@ -165,6 +169,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'East',
     status: 'Approved',
     featured: false,
+    tags: ['Budget', 'Family-Friendly'],
     views: 520,
     inquiries: 5,
     images: [
@@ -199,6 +204,7 @@ export const INITIAL_PROPERTIES: Property[] = [
     facing: 'South',
     status: 'Pending Approval', // Initially pending for Admin flow demonstration!
     featured: false,
+    tags: ['Luxury', 'Family-Friendly'],
     views: 290,
     inquiries: 2,
     images: [
@@ -252,12 +258,45 @@ export const INITIAL_INQUIRIES: Inquiry[] = [
     id: 'inq-1',
     propertyId: 'prop-1',
     propertyTitle: 'Skyline Oasis 3BHK Penthouse',
+    customerName: 'Premium Client',
+    customerEmail: 'elite.client@hyderabad.in',
+    customerPhone: '+91 91000 12345',
+    message: 'Greetings! I am looking for a premium north-facing 3BHK. Is there custom interior modification support for the terrace pool?',
+    date: '2026-06-19',
+    status: 'Received'
+  },
+  {
+    id: 'inq-2',
+    propertyId: 'prop-3',
+    propertyTitle: 'Miyapur Greenwoods 3BHK',
+    customerName: 'Premium Client',
+    customerEmail: 'elite.client@hyderabad.in',
+    customerPhone: '+91 91000 12345',
+    message: 'Is the possession date guaranteed by Dec 2026? I am interested in a banking loan tie-up option with SBI.',
+    date: '2026-06-18',
+    status: 'Under Review'
+  },
+  {
+    id: 'inq-3',
+    propertyId: 'prop-4',
+    propertyTitle: 'Lakeside Horizon Smart Condo',
+    customerName: 'Premium Client',
+    customerEmail: 'elite.client@hyderabad.in',
+    customerPhone: '+91 91000 12345',
+    message: 'I would like to schedule a virtual walkthrough this Sunday. Please advise if high-speed fiber internet is pre-terminated.',
+    date: '2026-06-17',
+    status: 'Contacted'
+  },
+  {
+    id: 'inq-4',
+    propertyId: 'prop-2',
+    propertyTitle: 'Jubilee Hills Manor of Kings',
     customerName: 'Vikram Reddy',
     customerEmail: 'vikram.reddy@techm.com',
     customerPhone: '+91 98850 11223',
-    message: 'Hello, is there any scope for price negotiation? I would like to pay 50% upfront downpayment and complete the rest in 30 days. Please arrange a call back.',
+    message: 'Hello, is there any scope for price negotiation? I would like to pay 50% upfront downpayment and complete the rest in 30 days.',
     date: '2026-06-15',
-    status: 'Received'
+    status: 'Answered'
   }
 ];
 
