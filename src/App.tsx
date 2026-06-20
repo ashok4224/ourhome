@@ -13,7 +13,6 @@ import { LandingPageView } from './components/LandingPageView';
 import { PropertyDetailsView } from './components/PropertyDetailsView';
 import { ListingsPageView } from './components/ListingsPageView';
 import { BuilderPortalView } from './components/BuilderPortalView';
-import { AdminPortalView } from './components/AdminPortalView';
 import { LiveChatDrawer } from './components/LiveChatDrawer';
 import { MaintenanceManagementView } from './components/MaintenanceManagementView';
 import { SuperServicesView } from './components/SuperServicesView';
@@ -21,7 +20,7 @@ import { SmartDeciderView } from './components/SmartDeciderView';
 import { 
   Building2, Sliders, Bell, User, Clock, Heart, ShieldAlert,
   Menu, X, Sparkles, LayoutDashboard, Compass, Layers, CheckCircle2, ChevronDown,
-  MessageSquare, CheckSquare
+  MessageSquare, CheckSquare, PlusCircle
 } from 'lucide-react';
 
 export default function App() {
@@ -338,9 +337,22 @@ export default function App() {
 
   const handleQuickTabSelect = (tab: string) => {
     setSelectedProperty(null);
-    setActiveTab(tab);
+    let targetRole: 'customer' | 'builder' | 'admin' | 'maintenance' = 'customer';
+    if (tab === 'dashboard' || tab === 'builder') {
+      targetRole = 'builder';
+      triggerToast("Welcome to Owner/Builder Desk! Post your Rent or Sale property directly below.", "info");
+      setActiveTab('dashboard');
+    } else if (tab === 'maintenance') {
+      targetRole = 'maintenance';
+      triggerToast("Welcome to Society Hub! Syncing maintenance bills and facilities.", "info");
+      setActiveTab('maintenance');
+    } else {
+      setActiveTab(tab);
+    }
+    
+    setActiveRole(targetRole);
     setShowMobileMenu(false);
-    addTelemetryLog(`Navigated View: Switched primary route to "${tab}" panel.`);
+    addTelemetryLog(`Navigated View: Switched primary tab view to "${tab}" panel.`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setListingsPreFilters(undefined);
   };
@@ -390,21 +402,16 @@ export default function App() {
               </div>
             </div>
 
-             {/* Desktop Navigation Links (Dynamically isolated by selected user workspace role) */}
-            <nav id="desktop-nav" className="hidden md:flex items-center gap-1.5">
-              {(activeRole === 'customer'
-                ? [
-                    { id: 'landing', label: 'Explore Home', icon: Compass },
-                    { id: 'listings', label: 'Buy &amp; Rent', icon: Sliders },
-                    { id: 'decider', label: 'Decision Helper 🎯', icon: CheckSquare },
-                    { id: 'services', label: 'Super Services ⚡', icon: Sparkles }
-                  ]
-                : activeRole === 'builder'
-                ? [{ id: 'dashboard', label: 'Builder Desk', icon: LayoutDashboard }]
-                : activeRole === 'admin'
-                ? [{ id: 'admin', label: 'Admin Hub', icon: ShieldAlert }]
-                : [{ id: 'maintenance', label: 'Society Hub 🏢', icon: Building2 }]
-              ).map((tab) => {
+             {/* Desktop Navigation Links (Unified single Client App with all workspace portals) */}
+            <nav id="desktop-nav" className="hidden lg:flex items-center gap-1.5">
+              {[
+                { id: 'landing', label: 'Explore Home', icon: Compass },
+                { id: 'listings', label: 'Buy &amp; Rent', icon: Sliders },
+                { id: 'decider', label: 'Decision Helper 🎯', icon: CheckSquare },
+                { id: 'services', label: 'Super Services ⚡', icon: Sparkles },
+                { id: 'dashboard', label: 'Builder Desk 🏗️', icon: LayoutDashboard },
+                { id: 'maintenance', label: 'Society Hub 🏢', icon: Building2 }
+              ].map((tab) => {
                 const Icon = tab.icon;
                 const isSelected = activeTab === tab.id && !selectedProperty;
                 return (
@@ -501,6 +508,20 @@ export default function App() {
                 <span>Saved ({savedIds.length})</span>
               </button>
 
+              {/* Post Your Property helper badge */}
+              {activeRole === 'customer' && (
+                <button
+                  type="button"
+                  onClick={() => handleQuickTabSelect('builder')}
+                  className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:opacity-95 py-1.5 px-3 rounded-xl text-xs font-semibold shadow-xs cursor-pointer transition-all border border-emerald-500/25 shrink-0"
+                  title="List your rent or sale house with zero brokerage fees"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Post Property</span>
+                  <span className="bg-emerald-500 text-[8px] font-bold px-1 py-0.2 rounded-sm text-white shrink-0 font-mono">0% FEE</span>
+                </button>
+              )}
+
               {/* Mini User Profile dropdown switcher */}
               <div className="relative">
                 <button
@@ -534,52 +555,41 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
-                        handleSwitchRole('customer');
+                        handleQuickTabSelect('listings');
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
                     >
-                      <span>Customer App</span>
-                      <span className="text-[8px] px-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm font-mono uppercase">SWITCH</span>
+                      <span>Explore Buy &amp; Rent</span>
+                      <span className="text-[8px] px-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm font-mono uppercase">Go</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
-                        handleSwitchRole('builder');
+                        handleQuickTabSelect('dashboard');
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
                     >
-                      <span>Builder Console</span>
-                      <span className="text-[8px] px-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-sm font-mono uppercase">SWITCH</span>
+                      <span>Post / Edit Listings</span>
+                      <span className="text-[8px] px-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-sm font-mono uppercase">Go</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
-                        handleSwitchRole('admin');
-                      }}
-                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
-                    >
-                      <span>Admin Audit Panel</span>
-                      <span className="text-[8px] px-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-sm font-mono uppercase">SWITCH</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfileDropdown(false);
-                        handleSwitchRole('maintenance');
+                        handleQuickTabSelect('maintenance');
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
                     >
                       <span>Society Maintenance</span>
-                      <span className="text-[8px] px-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-sm font-mono uppercase font-bold">SWITCH</span>
+                      <span className="text-[8px] px-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-sm font-mono uppercase font-bold">Go</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => {
                         setProfileDropdown(false);
-                        triggerToast("OurHome Sign-out simulation: Client logged out securely. Re-logged instantly as Demo Administrator.", "info");
+                        triggerToast("OurHome Sign-out simulation: Client logged out securely. Feel free to re-login to explore listing analytics.", "info");
                       }}
                       className="w-full text-left px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 border-t border-slate-100 mt-1"
                     >
@@ -594,7 +604,7 @@ export default function App() {
                 id="mobile-menu-trigger"
                 type="button"
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="md:hidden p-2 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50 cursor-pointer"
+                className="lg:hidden p-2 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50 cursor-pointer"
               >
                 {showMobileMenu ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
@@ -606,20 +616,15 @@ export default function App() {
 
         {/* Mobile menu panel dropdown */}
         {showMobileMenu && (
-          <div className="md:hidden border-b border-slate-200 bg-white/95 px-4 py-4 space-y-2 relative z-40 transition-all">
-            {(activeRole === 'customer'
-              ? [
-                  { id: 'landing', label: 'Explore Home' },
-                  { id: 'listings', label: 'Buy &amp; Rent' },
-                  { id: 'decider', label: 'Decision Helper 🎯' },
-                  { id: 'services', label: 'Super Services ⚡' }
-                ]
-              : activeRole === 'builder'
-              ? [{ id: 'dashboard', label: 'Builder Desk' }]
-              : activeRole === 'admin'
-              ? [{ id: 'admin', label: 'Admin Hub' }]
-              : [{ id: 'maintenance', label: 'Society Hub 🏢' }]
-            ).map((tab) => (
+          <div className="lg:hidden border-b border-slate-200 bg-white/95 px-4 py-4 space-y-2 relative z-40 transition-all">
+            {[
+              { id: 'landing', label: 'Explore Home' },
+              { id: 'listings', label: 'Buy &amp; Rent' },
+              { id: 'decider', label: 'Decision Helper 🎯' },
+              { id: 'services', label: 'Super Services ⚡' },
+              { id: 'dashboard', label: 'Builder Desk 🏗️' },
+              { id: 'maintenance', label: 'Society Hub 🏢' }
+            ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -718,17 +723,6 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'admin' && (
-              <AdminPortalView
-                properties={properties}
-                supportRequests={supportRequests}
-                onApproveProperty={handleApproveProperty}
-                onRejectProperty={handleRejectProperty}
-                onResolveSupport={handleResolveSupportTicket}
-                eventLogs={eventLogs}
-              />
-            )}
-
             {activeTab === 'maintenance' && (
               <MaintenanceManagementView />
             )}
@@ -753,41 +747,6 @@ export default function App() {
           </p>
         </div>
       </footer>
-
-      {/* Floating Interactive Workspace Switcher (Pivots between separated platform personas) */}
-      <div 
-        id="workspace-switcher-floating-badge" 
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 hover:bg-slate-900 border border-slate-750/80 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-3 max-w-[92vw] md:max-w-max transition-all animate-fade-in"
-      >
-        <div className="flex items-center gap-1.5 shrink-0 select-none">
-          <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
-          <span className="text-[10px] font-mono font-bold text-slate-100 uppercase tracking-widest">Active Workspace:</span>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
-          {[
-            { id: 'customer', label: 'Client App 🏡', color: 'hover:bg-emerald-500/10 text-emerald-400 border-emerald-500/35' },
-            { id: 'builder', label: 'Builder Console 🏗️', color: 'hover:bg-sky-500/10 text-sky-400 border-sky-500/35' },
-            { id: 'admin', label: 'Admin Hub 🛡️', color: 'hover:bg-amber-500/10 text-amber-400 border-amber-500/35' },
-            { id: 'maintenance', label: 'Society Hub 🏢', color: 'hover:bg-indigo-500/10 text-indigo-400 border-indigo-500/35' }
-          ].map((role) => {
-            const isCurrent = activeRole === role.id;
-            return (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => handleSwitchRole(role.id as any)}
-                className={`text-[10px] font-mono py-1 px-2.5 rounded-lg border font-semibold cursor-pointer transition-all ${
-                  isCurrent
-                    ? 'bg-emerald-600 border-emerald-400 text-white font-bold shadow-md scale-102 font-sans'
-                    : `bg-slate-950/45 border-slate-800 ${role.color}`
-                }`}
-              >
-                {role.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Render the unified instant real-time chat cabinet component */}
       <LiveChatDrawer

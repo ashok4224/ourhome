@@ -788,6 +788,36 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         </div>
       </section>
 
+      {/* Premium Direct Posting Banner for Owners & Builders */}
+      <section id="direct-post-banner" className="bg-white border border-slate-200 p-8 rounded-3xl flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xs">
+        <div className="space-y-3 max-w-xl text-left">
+          <span className="text-[10px] bg-sky-50 border border-sky-100 text-sky-700 font-mono font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+            Owner &amp; Builder Console
+          </span>
+          <h3 className="font-display text-2xl font-bold text-slate-900 tracking-tight">Are you looking to Rent or Sell your house in Hyderabad?</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            OurHome offers <span className="text-emerald-600 font-semibold">100% free direct-to-customer</span> listings. 
+            No broker harassment. Post your property in under 2 minutes, configure smart e-stamped digital rental agreements, and schedule audited site visits with direct state RERA ledger synchronization.
+          </p>
+          <div className="flex flex-wrap items-center gap-6 pt-2 font-mono text-[11px] text-slate-600">
+            <span className="flex items-center gap-1.5 font-bold"><Zap className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> 2-Min Fast Listing</span>
+            <span className="flex items-center gap-1.5 font-bold"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Rent &amp; Sell Support</span>
+            <span className="flex items-center gap-1.5 font-bold"><Handshake className="w-3.5 h-3.5 text-indigo-500" /> Direct Stamp Agreements</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('builder')}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer font-sans"
+          >
+            <span>Post Premium Listing</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </section>
+
       {/* Elegant Elite Customer Review Block */}
       <section id="testimonial-section" className="relative p-12 bg-gradient-to-br from-emerald-600 to-sky-700 rounded-3xl overflow-hidden text-white/95">
         <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none translate-x-1/4 translate-y-1/4">
