@@ -380,7 +380,7 @@ export default function App() {
   ];
 
   return (
-    <div id="ourhome-app-shell" className="min-h-screen bg-slate-50/50 flex flex-col font-sans select-none antialiased">
+    <div id="ourhome-app-shell" className="min-h-screen bg-gradient-to-br from-[#e0f2fe] via-white to-[#e8fbf1] flex flex-col font-sans select-none antialiased">
       
       {/* Dynamic Nav Header Bar */}
       <header id="app-nav-header" className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100">
@@ -391,14 +391,19 @@ export default function App() {
             <div 
               id="ourhome-logo-box"
               onClick={() => handleQuickTabSelect('landing')}
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center gap-2.5 cursor-pointer group select-none"
             >
-              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-md">
-                <Building2 className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-sky-500 text-white flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-emerald-600/10 group-hover:scale-105 ring-2 ring-emerald-100 group-hover:ring-emerald-400/20">
+                <Building2 className="w-5.5 h-5.5 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110" />
               </div>
-              <div>
-                <span className="font-display font-bold text-lg text-neutral-900 tracking-tight block">OurHome</span>
-                <span className="text-[9px] font-mono leading-none tracking-widest text-emerald-600 block uppercase font-bold">Hyderabad Portal</span>
+              <div className="flex flex-col">
+                <span className="font-display font-black text-xl tracking-tight leading-none text-slate-900 flex items-center gap-1 transition-colors group-hover:text-emerald-700">
+                  Our<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-600 font-extrabold">Home</span>
+                  <span className="inline-block w-1.5 h-1.5 bg-sky-500 rounded-full animate-pulse self-start mt-0.5"></span>
+                </span>
+                <span className="text-[9px] font-mono tracking-widest text-[#059669] font-extrabold uppercase leading-none mt-1">
+                  Hyderabad Portal
+                </span>
               </div>
             </div>
 
@@ -421,8 +426,8 @@ export default function App() {
                     onClick={() => handleQuickTabSelect(tab.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-tight transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100'
+                        ? 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-md shadow-emerald-650/15 scale-102'
+                        : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/80'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" /> 
@@ -631,8 +636,8 @@ export default function App() {
                 onClick={() => handleQuickTabSelect(tab.id)}
                 className={`w-full text-left py-2 px-3 rounded-lg text-xs font-semibold ${
                   activeTab === tab.id && !selectedProperty
-                    ? 'bg-emerald-600 text-white'
-                    : 'text-slate-600 hover:bg-slate-50'
+                    ? 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-100/80'
                 }`}
                 dangerouslySetInnerHTML={{ __html: tab.label }}
               />
@@ -733,11 +738,15 @@ export default function App() {
       {/* Elegant minimalist footer */}
       <footer id="app-nav-footer" className="bg-slate-100 border-t border-slate-200 text-slate-500 py-10 px-6 font-mono text-[11px] text-center mt-auto">
         <div className="max-w-7xl mx-auto space-y-4">
-          <div className="flex justify-center items-center gap-2 text-emerald-600">
-            <Building2 className="w-4 h-4" />
-            <span className="font-display font-medium text-xs text-slate-800">OurHome</span>
+          <div className="flex justify-center items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-600 to-sky-500 text-white flex items-center justify-center shadow-xs">
+              <Building2 className="w-3.5 h-3.5" />
+            </div>
+            <span className="font-display font-extrabold text-sm text-slate-900 tracking-tight">
+              Our<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-sky-600">Home</span>
+            </span>
             <span className="text-slate-300">|</span>
-            <span>Estates • Condos • Penthouses</span>
+            <span className="text-slate-700 font-bold text-[10px] tracking-tight">Estates &bull; Condos &bull; Penthouses</span>
           </div>
           <p className="max-w-md mx-auto leading-relaxed text-slate-500 text-[10px]">
             In strict compliance with TS-RERA (Telangana Real Estate Regulatory Authority) protocols. Secured escrow services engineered with dual key cryptographic certificates.

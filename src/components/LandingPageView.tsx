@@ -216,46 +216,46 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         </div>
       </section>
 
-      {/* Sanctuary Aspiration & Vibe Matcher Quiz (Emotional & Eye-Attractive UX) */}
-      <section id="sanctuary-vibe-quiz" className="bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950/85 border border-slate-800 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-          <Compass className="w-64 h-64 text-emerald-400 rotate-12" />
+      {/* Sanctuary Aspiration & Vibe Matcher Quiz (Bright, Energetic, Premium Redesign with Vivid Emerald Green, Sky Blue, and Bright White) */}
+      <section id="sanctuary-vibe-quiz" className="bg-gradient-to-br from-[#ebfcf3] via-[#e3f4fe] to-[#f4fcf7] border border-emerald-250 rounded-3xl p-6 md:p-8 text-slate-800 relative overflow-hidden shadow-lg shadow-sky-100">
+        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+          <Compass className="w-64 h-64 text-emerald-600 rotate-12" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Aspirational copy & trust assurances */}
           <div className="lg:col-span-5 space-y-5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono tracking-wider uppercase rounded-full border border-emerald-500/20 select-none">
-              <Sparkles className="w-3.5 h-3.5" /> Direct Choice Evaluator
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-mono tracking-wider uppercase rounded-full border border-emerald-250 select-none">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" /> Direct Choice Evaluator
             </div>
-            <h2 className="font-display text-2xl md:text-3.5xl font-black tracking-tight text-white leading-tight">
-              Discover Your Ideal <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-300">Sanctuary Vibe</span>
+            <h2 className="font-display text-2xl md:text-3.5xl font-black tracking-tight text-slate-900 leading-tight">
+              Discover Your Ideal <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-sky-600">Sanctuary Vibe</span>
             </h2>
-            <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
               Finding a luxury residency represents a deep personal commitment. Skip rigid search engines. Answer 3 brief lifestyle &amp; aspiration questions to receive an instant, emotionally tailored 99% match from our verified Hyderabad collection.
             </p>
 
-            <ul className="space-y-3.5 text-xs text-slate-400">
+            <ul className="space-y-3.5 text-xs text-slate-700">
               <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>100% Broker-Free Direct Builder Contracts</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-medium">100% Broker-Free Direct Builder Contracts</span>
               </li>
               <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Ironclad TS-RERA Registry Verification Audits</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-medium">Ironclad TS-RERA Registry Verification Audits</span>
               </li>
               <li className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Premium Live Video-Guidance Support</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-medium">Premium Live Video-Guidance Support</span>
               </li>
             </ul>
           </div>
 
           {/* Interactive Game / Matcher Box */}
-          <div className="lg:col-span-7 bg-slate-950/50 border border-slate-800 rounded-2xl p-6 relative shadow-inner min-h-[345px] flex flex-col justify-between">
+          <div className="lg:col-span-7 bg-white/95 border border-slate-200 rounded-2xl p-6 relative shadow-md min-h-[345px] flex flex-col justify-between">
             {/* Step indicators */}
-            <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-4 select-none">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 select-none">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-slate-500 uppercase">
                 {quizStep === 0 ? 'READY TO START' : quizStep < 4 ? `Aspiration Step ${quizStep} of 3` : 'MATCH RESULTS FOUND'}
               </span>
               <div className="flex gap-1.5">
@@ -263,7 +263,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                   <div 
                     key={step} 
                     className={`h-1.5 rounded-full transition-all duration-350 ${
-                      quizStep >= step ? (quizStep === 4 ? 'w-4 bg-emerald-400' : 'w-4 bg-sky-400') : 'w-1.5 bg-slate-800'
+                      quizStep >= step ? (quizStep === 4 ? 'w-4 bg-emerald-600' : 'w-4 bg-sky-500') : 'w-1.5 bg-slate-200'
                     }`} 
                   />
                 ))}
@@ -273,12 +273,12 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {/* QUIZ STEP 0: Splash */}
             {quizStep === 0 && (
               <div className="space-y-6 my-auto text-center py-4 animate-fade-in">
-                <div className="mx-auto w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center text-emerald-400 shadow-sm">
+                <div className="mx-auto w-14 h-14 rounded-full bg-emerald-50 border border-emerald-150 flex items-center justify-center text-emerald-600 shadow-xs shadow-emerald-50/50">
                   <Smile className="w-7 h-7" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-display font-bold text-lg text-white">How does your family want to experience Hyderabad?</h3>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  <h3 className="font-display font-bold text-lg text-slate-900">How does your family want to experience Hyderabad?</h3>
+                  <p className="text-xs text-slate-605 max-w-sm mx-auto">
                     Let's match your heart with the right community footprint — whether a majestic botanical penthouse in Gachibowli or a leafy estate in Jubilee Hills.
                   </p>
                 </div>
@@ -286,9 +286,9 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                   id="btn-start-vibe-quiz"
                   type="button"
                   onClick={() => setQuizStep(1)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs font-sans tracking-wide shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  className="bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-700 hover:to-sky-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs font-sans tracking-wide shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  Find My Sanctuary Vibe <Compass className="w-4 h-4" />
+                  Find My Sanctuary Vibe <Compass className="w-4 h-4 animate-spin-slow" />
                 </button>
               </div>
             )}
@@ -297,35 +297,35 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {quizStep === 1 && (
               <div className="space-y-4 animate-fade-in my-auto py-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-sky-500/10 rounded-lg text-sky-400 border border-sky-500/20">
+                  <div className="p-2 bg-sky-50 rounded-lg text-sky-600 border border-sky-100/80">
                     <Coffee className="w-4 h-4" />
                   </div>
-                  <h4 className="font-display font-bold text-sm text-slate-105">1. What is your family's ideal weekend morning mood?</h4>
+                  <h4 className="font-display font-bold text-sm text-slate-850">1. What is your family's ideal weekend morning mood?</h4>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(1, 'morning_serene')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-805 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-sky-305 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Cozy quiet sunrise over a leafy garden veranda (Jubilee Hills Estates Vibe)</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-600 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(1, 'morning_urban')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-805 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-sky-305 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Dynamic sunrays bouncing off gorgeous panoramic smart skyscrapers (IT High-rise Vibe)</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-605 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(1, 'morning_vibrant')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-sky-305 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Convenient fast-access to tech campuses, boutique health clubs &amp; retail complexes</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-sky-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-sky-605 transition-all shrink-0" />
                   </button>
                 </div>
               </div>
@@ -335,35 +335,35 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {quizStep === 2 && (
               <div className="space-y-4 animate-fade-in my-auto py-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400 border border-indigo-500/20">
+                  <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600 border border-indigo-100">
                     <Compass className="w-4 h-4" />
                   </div>
-                  <h4 className="font-display font-bold text-sm text-slate-105">2. Which layout parameter nurtures your private lifestyle best?</h4>
+                  <h4 className="font-display font-bold text-sm text-slate-850">2. Which layout parameter nurtures your private lifestyle best?</h4>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(2, 'focus_office')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-indigo-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>A dedicated, soundproof executive work study with gigabit ethernet conduits</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-605 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(2, 'focus_backyard')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-indigo-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Vast double-height living salons, solid wood floors, &amp; rooftop sky decks</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-605 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(2, 'focus_smart')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-indigo-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>State-of-the-art smart home integration panels, solar micro-grids, &amp; EV charges</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-indigo-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-indigo-605 transition-all shrink-0" />
                   </button>
                 </div>
               </div>
@@ -373,35 +373,35 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {quizStep === 3 && (
               <div className="space-y-4 animate-fade-in my-auto py-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400 border border-emerald-500/20">
+                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-650 border border-emerald-100">
                     <HeartHandshake className="w-4 h-4" />
                   </div>
-                  <h4 className="font-display font-bold text-sm text-slate-105">3. What represents absolute transactional security for you?</h4>
+                  <h4 className="font-display font-bold text-sm text-slate-850">3. What represents absolute transactional security for you?</h4>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(3, 'trust_direct')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-emerald-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>100% direct-deal zero brokerage model to save huge agency markups</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-800 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(3, 'trust_rera')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-emerald-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Rigorous TS-RERA legal compliance audits and clear land title deed clearances</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-800 transition-all shrink-0" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleVibeSelection(3, 'trust_live')}
-                    className="w-full text-left p-3.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all text-xs font-medium text-slate-200 cursor-pointer flex items-center justify-between group"
+                    className="w-full text-left p-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-205/80 hover:border-emerald-300 transition-all text-xs font-semibold text-slate-800 cursor-pointer flex items-center justify-between group shadow-xs hover:shadow-sm"
                   >
                     <span>Warm, attentive real-time chat consultation mapping out instant offline tours</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-0.5 group-hover:text-emerald-400 transition-all shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-800 transition-all shrink-0" />
                   </button>
                 </div>
               </div>
@@ -410,23 +410,23 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             {/* QUIZ STEP 4: Success MATCH Recommended layout */}
             {quizStep === 4 && (
               <div className="space-y-4 animate-fade-in my-auto py-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
+                    <Zap className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div>
-                      <h4 className="font-display font-extrabold text-sm text-slate-105">Recommended Sanctuary Fitted!</h4>
-                      <p className="text-[10px] text-slate-400">Calculated based on your specific lifestyle selections</p>
+                      <h4 className="font-display font-extrabold text-sm text-slate-900">Recommended Sanctuary Fitted!</h4>
+                      <p className="text-[10px] text-slate-500">Calculated based on your specific lifestyle selections</p>
                     </div>
                   </div>
-                  <span className="font-mono text-xs font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/25 shrink-0 self-start sm:self-auto select-none">
+                  <span className="font-mono text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200 shrink-0 self-start sm:self-auto select-none">
                     {quizScore}% Match Rating
                   </span>
                 </div>
 
                 {quizMatchedProperty ? (
-                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row gap-4 items-stretch">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-205 flex flex-col sm:flex-row gap-4 items-stretch shadow-xs">
                     {/* Thumbnail */}
-                    <div className="w-full sm:w-28 h-24 rounded-lg overflow-hidden bg-slate-800 shrink-0 relative">
+                    <div className="w-full sm:w-28 h-24 rounded-lg overflow-hidden bg-slate-200 shrink-0 relative">
                       <img 
                         src={quizMatchedProperty.images[0]} 
                         alt={quizMatchedProperty.title}
@@ -438,14 +438,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                     <div className="flex-1 flex flex-col justify-between space-y-2">
                       <div>
                         <div className="flex justify-between items-start gap-1">
-                          <h5 className="font-display font-semibold text-white text-xs line-clamp-1">{quizMatchedProperty.title}</h5>
-                          <span className="font-mono text-emerald-400 font-bold text-xs shrink-0">{getPriceLabel(quizMatchedProperty)}</span>
+                          <h5 className="font-display font-bold text-slate-900 text-xs line-clamp-1">{quizMatchedProperty.title}</h5>
+                          <span className="font-display text-emerald-700 font-extrabold text-xs shrink-0">{getPriceLabel(quizMatchedProperty)}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 line-clamp-2">{quizMatchedProperty.location}</p>
+                        <p className="text-[10px] text-slate-500 line-clamp-2">{quizMatchedProperty.location}</p>
                       </div>
                       
                       {/* Vibe description feedback block */}
-                      <p className="text-[10px] italic text-slate-300 leading-normal bg-slate-950/40 p-2 rounded-lg border border-slate-900/60">
+                      <p className="text-[10px] italic text-slate-700 leading-normal bg-white p-2.5 rounded-lg border border-slate-200">
                         "Matches your heart's desire with beautiful {quizMatchedProperty.subLocality} parameters, secured by our verified direct platform architecture."
                       </p>
 
@@ -453,14 +453,14 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleResetVibeQuiz()}
-                          className="text-[10px] hover:underline text-slate-400 font-mono"
+                          className="text-[10px] hover:underline text-slate-500 font-mono"
                         >
                           &larr; Start Over
                         </button>
                         <button
                           type="button"
                           onClick={() => onSelectProperty(quizMatchedProperty)}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                          className="bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-700 hover:to-sky-700 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer shadow-xs"
                         >
                           Inspect Match <Eye className="w-3.5 h-3.5" />
                         </button>
@@ -468,12 +468,12 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-xs text-slate-400 space-y-2">
+                  <div className="py-8 text-center text-xs text-slate-500 space-y-2">
                     <p>No listings matched your criteria perfectly in current pool.</p>
                     <button
                       type="button"
                       onClick={() => handleResetVibeQuiz()}
-                      className="text-emerald-400 hover:underline"
+                      className="text-emerald-600 hover:underline"
                     >
                       Reset and try different lifestyles
                     </button>
@@ -483,7 +483,7 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             )}
 
             {/* Micro assurance disclaimer footer */}
-            <div className="mt-3 text-[9px] text-slate-500 text-center border-t border-slate-900 pt-2 select-none">
+            <div className="mt-3 text-[9px] text-slate-400 text-center border-t border-slate-100 pt-2 select-none">
               All recommended sanctuaries adhere to 100% direct broker-free regulatory protocols.
             </div>
           </div>
@@ -558,18 +558,18 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
             </div>
           </div>
 
-          {/* CONTROL CENTER CARD */}
+          {/* SOCIETY HUB CARD */}
           <div 
-            id="cat-admin"
-            onClick={() => onNavigateToTab('admin')}
+            id="cat-maintenance"
+            onClick={() => onNavigateToTab('maintenance')}
             className="group cursor-pointer bg-white border border-neutral-100 hover:border-sky-200 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between h-44 hover:-translate-y-1 col-span-2 lg:col-span-1"
           >
             <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-11 h-11 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
-              <ShieldCheck className="w-5 h-5" />
+              <Building className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Admin Panel</h3>
-              <p className="text-xs text-neutral-500 mt-1">Audit verification requests &amp; supervise platform health.</p>
+              <h3 className="font-display font-medium text-neutral-900 text-base group-hover:text-sky-600 transition-colors">Society Hub</h3>
+              <p className="text-xs text-neutral-500 mt-1">Submit maintenance tickets, book premium facilities, and track notices.</p>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Property } from '../types';
+import { NearbyInfrastructureModal } from './NearbyInfrastructureModal';
 import { 
   Search, SlidersHorizontal, Grid, Map as MapIcon, 
   Bed, Square, Compass, Heart, Eye, ArrowRight, X, Sparkles,
@@ -308,6 +309,9 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareWarning, setCompareWarning] = useState<string | null>(null);
+
+  // Selected property for nearby infra map
+  const [selectedNearbyProperty, setSelectedNearbyProperty] = useState<Property | null>(null);
 
   const handleToggleCompare = (propertyId: string, checked: boolean) => {
     if (checked) {
@@ -773,13 +777,29 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
                         </div>
 
                         <div className="mt-4 pt-2 border-t border-slate-50 flex items-center justify-between text-xs">
-                          <button
-                            type="button"
-                            onClick={() => onSelectProperty(p)}
-                            className="font-bold text-emerald-700 hover:text-emerald-600 inline-flex items-center gap-1 group bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100 hover:border-neutral-250 transition-all cursor-pointer"
-                          >
-                            Explore <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => onSelectProperty(p)}
+                              className="font-bold text-emerald-700 hover:text-emerald-600 inline-flex items-center gap-1 group bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-100 hover:border-neutral-250 transition-all cursor-pointer"
+                            >
+                              Explore <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+
+                            <button
+                              type="button"
+                              id={`card-nearby-btn-${p.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedNearbyProperty(p);
+                              }}
+                              className="font-bold text-slate-600 hover:text-emerald-700 inline-flex items-center gap-1 bg-neutral-50 hover:bg-emerald-50/50 px-2.5 py-1.5 rounded-xl border border-neutral-105 hover:border-emerald-250 transition-all cursor-pointer"
+                              title="Show nearby schools, hospitals & transit hubs"
+                            >
+                              <Compass className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Nearby</span>
+                            </button>
+                          </div>
 
                           <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-mono font-bold text-neutral-500 select-none hover:text-slate-900 bg-neutral-50 hover:bg-neutral-100 px-2.5 py-1.5 rounded-xl border border-neutral-100 transition-all">
                             <input
@@ -961,14 +981,35 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
                          >
                            {/* Animated concentric radar rings */}
                            {isHovered && (
-                             <circle
-                               cx={coords.x}
-                               cy={coords.y}
-                               r="16"
-                               fill="rgba(16, 185, 129, 0.3)"
-                               className="animate-ping"
-                               style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
-                             />
+                             <g>
+                               <circle
+                                 cx={coords.x}
+                                 cy={coords.y}
+                                 r="55"
+                                 fill="rgba(16, 185, 129, 0.04)"
+                                 stroke="#10b981"
+                                 strokeWidth="1.5"
+                                 strokeDasharray="3 2"
+                                 className="pointer-events-none"
+                                />
+                                <text
+                                  x={coords.x}
+                                  y={coords.y + 64}
+                                  textAnchor="middle"
+                                  fill="#10b981"
+                                  className="text-[7px] font-mono font-black uppercase tracking-wider select-none pointer-events-none fill-emerald-600"
+                                >
+                                  5km Radius Services Bound
+                                </text>
+                                <circle
+                                  cx={coords.x}
+                                  cy={coords.y}
+                                  r="16"
+                                  fill="rgba(16, 185, 129, 0.3)"
+                                  className="animate-ping"
+                                  style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
+                                />
+                             </g>
                            )}
 
                            {/* Pin Pointer Base marker */}
@@ -1221,14 +1262,35 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
                       >
                         {/* Animated concentric radar rings */}
                         {isHovered && (
-                          <circle
-                            cx={coords.x}
-                            cy={coords.y}
-                            r="15"
-                            fill="rgba(16, 185, 129, 0.35)"
-                            className="animate-ping"
-                            style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
-                          />
+                          <g>
+                            <circle
+                              cx={coords.x}
+                              cy={coords.y}
+                              r="55"
+                              fill="rgba(16, 185, 129, 0.04)"
+                              stroke="#10b981"
+                              strokeWidth="1.5"
+                              strokeDasharray="3 2"
+                              className="pointer-events-none"
+                            />
+                            <text
+                              x={coords.x}
+                              y={coords.y + 64}
+                              textAnchor="middle"
+                              fill="#10b981"
+                              className="text-[7px] font-mono font-black uppercase tracking-wider select-none pointer-events-none fill-emerald-600"
+                            >
+                              5km Radius Services Bound
+                            </text>
+                            <circle
+                              cx={coords.x}
+                              cy={coords.y}
+                              r="15"
+                              fill="rgba(16, 185, 129, 0.35)"
+                              className="animate-ping"
+                              style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
+                            />
+                          </g>
                         )}
 
                         {/* Outer pin shade */}
@@ -1428,14 +1490,14 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
 
       {/* FLOATING COMPARISON TOOLBAR (inspired by Magicbricks & 99acres) */}
       {compareIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-xl bg-slate-950/95 border border-slate-800 rounded-2xl shadow-2xl px-5 py-3.5 flex items-center justify-between gap-4 animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-xl bg-white/95 border border-emerald-400/30 rounded-2xl shadow-2xl px-5 py-3.5 flex items-center justify-between gap-4 animate-fade-in ring-4 ring-emerald-55/45 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-600 text-white rounded-lg p-1.5 shrink-0">
+            <div className="bg-emerald-600 text-white rounded-lg p-1.5 shrink-0 shadow-sm shadow-emerald-600/30">
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white tracking-wide">Property Compare Shelf</p>
-              <p className="text-[10px] text-slate-400 font-mono">
+              <p className="text-xs font-bold text-slate-900 tracking-wide">Property Compare Shelf</p>
+              <p className="text-[10px] text-emerald-800 font-mono font-bold">
                 {compareIds.length} of 3 properties selected
               </p>
             </div>
@@ -1445,7 +1507,7 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
                 const p = properties.find((item) => item.id === cid);
                 if (!p) return null;
                 return (
-                  <div key={cid} className="w-8 h-8 rounded-full border-2 border-slate-900 overflow-hidden bg-neutral-800">
+                  <div key={cid} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-neutral-250 shadow-sm">
                     <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                   </div>
                 );
@@ -1457,7 +1519,7 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
             <button
               type="button"
               onClick={() => setCompareIds([])}
-              className="px-3 py-1.5 hover:bg-slate-800 text-[10px] uppercase font-mono font-bold text-slate-400 hover:text-white rounded-lg cursor-pointer transition-colors"
+              className="px-3 py-1.5 hover:bg-slate-100 text-[10px] uppercase font-mono font-bold text-slate-500 hover:text-slate-800 rounded-lg cursor-pointer transition-colors"
             >
               Clear
             </button>
@@ -1466,8 +1528,8 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
               onClick={() => setShowCompareModal(true)}
               className={`px-4 py-2 font-display font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all ${
                 compareIds.length >= 2
-                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md animate-pulse'
-                  : 'bg-slate-850 text-slate-500 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md animate-pulse'
+                  : 'bg-neutral-100 text-slate-400 cursor-not-allowed'
               }`}
               disabled={compareIds.length < 2}
             >
@@ -1747,6 +1809,15 @@ export const ListingsPageView: React.FC<ListingsPageViewProps> = ({
             ✕
           </button>
         </div>
+      )}
+
+      {/* Nearby Infrastructure Portal Overlay */}
+      {selectedNearbyProperty && (
+        <NearbyInfrastructureModal
+          property={selectedNearbyProperty}
+          isOpen={!!selectedNearbyProperty}
+          onClose={() => setSelectedNearbyProperty(null)}
+        />
       )}
     </div>
   );

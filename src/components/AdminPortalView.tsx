@@ -46,22 +46,22 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
   return (
     <div id="admin-portal" className="space-y-8 animate-fade-in text-neutral-850">
       {/* Dynamic Header console with platform stats */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 text-white p-6 rounded-3xl border border-slate-950">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-emerald-800 to-teal-850 text-white p-6 rounded-3xl border border-emerald-900/30 shadow-lg">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 py-0.5 px-2 bg-rose-500/10 text-rose-300 text-[10px] uppercase font-mono tracking-wider rounded-md border border-rose-500/20">
+          <div className="inline-flex items-center gap-1.5 py-0.5 px-2 bg-rose-500/10 text-rose-305 text-[10px] uppercase font-mono tracking-wider rounded-md border border-rose-500/20">
             <Settings className="w-3.5 h-3.5" /> SECURE ROOT ACCESS
           </div>
           <h1 className="font-display text-xl md:text-2xl font-bold tracking-tight">
             OurHome Control Center
           </h1>
-          <p className="text-xs text-zinc-400">
-            Platform Health: <span className="text-emerald-400 font-bold">● Operational (100% SLA)</span> • Security Protocol Active
+          <p className="text-xs text-emerald-100">
+            Platform Health: <span className="text-emerald-300 font-bold">● Operational (100% SLA)</span> • Security Protocol Active
           </p>
         </div>
 
         {/* Sync loading effect indicator */}
-        <div className="flex gap-2 items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 font-mono text-[10px] text-zinc-400 shrink-0">
-          <RefreshCw className="w-3 h-3 text-emerald-400 animate-spin" />
+        <div className="flex gap-2 items-center bg-teal-950/40 p-2.5 rounded-xl border border-teal-500/20 font-mono text-[10px] text-teal-200 shrink-0">
+          <RefreshCw className="w-3 h-3 text-emerald-300 animate-spin" />
           <span>Real-time DB Sync Active</span>
         </div>
       </div>

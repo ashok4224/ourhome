@@ -155,19 +155,19 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
 
   return (
     <div id="builder-portal" className="space-y-8 animate-fade-in text-neutral-850">
-      {/* Upper greetings banner */}
-      <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-3xl text-white relative overflow-hidden">
+      {/* Upper greetings banner - Bright, premium sky-blue & emerald-green gradient */}
+      <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-sky-600 border border-emerald-400 p-8 rounded-3xl text-white relative overflow-hidden shadow-lg shadow-emerald-550/15">
         <div className="absolute right-0 top-0 opacity-15 translate-x-1/4 -translate-y-12 select-none pointer-events-none">
-          <TrendingUp className="w-64 h-64 text-indigo-400" />
+          <TrendingUp className="w-64 h-64 text-white" />
         </div>
         <div className="max-w-xl space-y-3 relative z-10">
-          <div className="inline-flex items-center gap-1.5 py-0.5 px-2.5 rounded-lg bg-indigo-500/10 text-indigo-300 text-[10px] font-mono border border-indigo-400/10 uppercase tracking-widest">
-            <Sparkles className="w-3 h-3 text-indigo-400" /> Builder Dashboard
+          <div className="inline-flex items-center gap-1.5 py-0.5 px-2.5 rounded-lg bg-white/25 text-white text-[10px] font-mono border border-white/20 uppercase tracking-widest">
+            <Sparkles className="w-3 h-3 text-white animate-pulse" /> Builder Dashboard
           </div>
-          <h1 className="font-display text-2xl md:text-4xl font-bold tracking-tight">
-            Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-teal-200 to-indigo-100">Arjun</span>!
+          <h1 className="font-display text-2xl md:text-4xl font-extrabold tracking-tight">
+            Welcome back, <span className="text-white">Arjun</span>!
           </h1>
-          <p className="text-xs text-neutral-300 leading-relaxed">
+          <p className="text-xs text-slate-50 leading-relaxed">
             Supervise leads, inspect metrics, and quickly list newly acquired high-end residential estates in the active Hyderabad portal.
           </p>
         </div>
@@ -265,28 +265,28 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
         {/* Column 1: Listing portfolio manager */}
         <div className="lg:col-span-3 space-y-6">
 
-          {/* Live Client Chat Rooms Hub */}
-          <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 space-y-4 shadow-xl">
+          {/* Live Client Chat Rooms Hub - Bright Redesign */}
+          <div className="bg-white text-slate-800 rounded-3xl p-6 border border-slate-150 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg shrink-0">
+                <div className="p-1.5 bg-sky-50 text-sky-600 rounded-lg shrink-0">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-400"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-450 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-display text-sm font-bold tracking-tight">Active Client Live Rooms</h3>
-                  <p className="text-[10px] text-slate-400 font-mono">Instant socket-like SSE channels</p>
+                  <h3 className="font-display text-sm font-bold tracking-tight text-slate-900">Active Client Live Rooms</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">Instant socket-like SSE channels</p>
                 </div>
               </div>
-              <span className="text-[9px] font-mono bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-md text-indigo-300 font-bold whitespace-nowrap animate-pulse">
+              <span className="text-[9px] font-mono bg-emerald-50 border border-emerald-105 px-2.5 py-1 rounded-md text-emerald-750 font-bold whitespace-nowrap animate-pulse">
                 {chatInvitations.length} Active Consultations
               </span>
             </div>
 
             {chatInvitations.length === 0 ? (
-              <div className="bg-slate-950/40 p-6 text-center rounded-2xl border border-slate-800 text-slate-500 text-xs font-mono">
+              <div className="bg-slate-50/55 p-6 text-center rounded-2xl border border-slate-150 text-slate-505 text-xs font-mono">
                 No active live client rooms currently online. Visitors can trigger Live Rooms via the main Estate Details viewer.
               </div>
             ) : (
@@ -298,37 +298,37 @@ export const BuilderPortalView: React.FC<BuilderPortalViewProps> = ({
                   return (
                     <div 
                       key={inv.id}
-                      className="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl hover:border-slate-750 transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm animate-scale-in"
+                      className="p-3.5 bg-slate-50 border border-slate-150 rounded-2xl hover:border-sky-200 transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xs animate-scale-in"
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-xs text-white">{inv.customerName}</p>
-                          <span className="text-[8px] font-mono bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 border border-emerald-500/20 rounded uppercase font-bold">
+                          <p className="font-semibold text-xs text-slate-900">{inv.customerName}</p>
+                          <span className="text-[8px] font-mono bg-emerald-50 text-emerald-700 px-1.5 py-0.5 border border-emerald-200 rounded uppercase font-bold">
                             ONLINE
                           </span>
                           {typingState?.isTyping && (
-                            <span className="text-[8px] font-mono text-indigo-400 animate-pulse font-bold">
+                            <span className="text-[8px] font-mono text-sky-600 animate-pulse font-bold">
                               typing...
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-slate-400 truncate max-w-[220px]">
-                          Property: <strong className="text-slate-305">{inv.propertyTitle}</strong>
+                        <p className="text-[10px] text-slate-500 truncate max-w-[220px]">
+                          Property: <strong className="text-slate-700">{inv.propertyTitle}</strong>
                         </p>
                         {lastMessage && (
-                          <p className="text-[9px] text-teal-300 italic font-mono truncate max-w-[240px] leading-tight">
+                          <span className="inline-block text-[9px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-mono truncate max-w-full leading-normal">
                             Last Msg: "{lastMessage.text}"
-                          </p>
+                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-                        <span className="text-[9px] font-mono bg-slate-800 text-indigo-300 border border-slate-700 px-1.5 py-0.5 rounded-lg whitespace-nowrap">
+                        <span className="text-[9px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded-lg whitespace-nowrap">
                           {messageCount} msgs
                         </span>
                         <button
                           type="button"
                           onClick={() => onOpenChat(inv.propertyId, inv.propertyTitle)}
-                          className="bg-indigo-600 hover:bg-indigo-500 font-bold font-mono text-[9px] text-white py-1.5 px-3 rounded-lg flex items-center gap-0.5 whitespace-nowrap cursor-pointer hover:scale-103 transition-all"
+                          className="bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-700 hover:to-sky-700 font-bold font-mono text-[9px] text-white py-1.5 px-3 rounded-lg flex items-center gap-0.5 whitespace-nowrap cursor-pointer hover:scale-103 transition-all"
                         >
                           Join Chat &rarr;
                         </button>

@@ -464,7 +464,7 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                           id={`owner-contact-btn-${prop.id}`}
                           type="button"
                           onClick={() => handleRequestOwnerContact(prop.id)}
-                          className="w-full bg-slate-900 hover:bg-emerald-600 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs transition-colors"
+                          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-xs transition-all"
                         >
                           Show Direct Owner Contact
                         </button>
@@ -754,11 +754,11 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                   </button>
                 </div>
 
-                <div className="p-3 bg-slate-900 text-white rounded-2xl flex justify-between items-center">
+                <div className="p-4 bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-600 text-white rounded-2xl flex justify-between items-center shadow-lg">
                   <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-mono">Estimated cost</span>
-                    <span className="text-lg font-bold font-sans flex items-center gap-0.5">
-                      <IndianRupee className="w-4 h-4 text-emerald-400" /> {moverEstimate.toLocaleString()}
+                    <span className="text-[10px] text-emerald-100 block uppercase font-mono font-bold tracking-wider">Estimated cost</span>
+                    <span className="text-xl font-black font-sans flex items-center gap-0.5">
+                      <IndianRupee className="w-4 h-4 text-emerald-250 animate-pulse" /> {moverEstimate.toLocaleString()}
                     </span>
                   </div>
                   <button
@@ -769,13 +769,13 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                       triggerToast(`Movers quote secured! Our verified partner team (Nandan Logistics) will reach on your selected move-in date.`, 'success');
                     }}
                     disabled={moverBooked}
-                    className={`text-xs font-semibold py-2 px-4 rounded-xl shadow-md transition-all ${
+                    className={`text-xs font-extrabold py-2 px-4 rounded-xl shadow-md transition-all ${
                       moverBooked 
-                        ? 'bg-slate-700 text-slate-400 cursor-not-allowed' 
-                        : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold'
+                        ? 'bg-white/20 text-white/75 cursor-not-allowed' 
+                        : 'bg-white text-emerald-900 hover:bg-emerald-50 font-bold'
                     }`}
                   >
-                    {moverBooked ? 'Estimate Shared' : 'Book Guranteed Crew'}
+                    {moverBooked ? 'Estimate Shared' : 'Book Guaranteed Crew'}
                   </button>
                 </div>
               </div>
@@ -865,7 +865,7 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                       onClick={() => handleToggleCompareSelection(p.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold tracking-tight border transition-all flex items-center gap-1.5 ${
                         selected
-                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-600 shadow-sm'
                           : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
@@ -931,7 +931,7 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onSelectProperty(matched)}
-                          className="w-full bg-slate-900 hover:bg-emerald-600 text-white text-xs font-semibold py-1.5 rounded-xl transition-all"
+                          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold py-1.5 rounded-xl transition-all"
                         >
                           View Full Profile
                         </button>
@@ -1212,7 +1212,7 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                 <button
                   id="generate-passcase-btn"
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl transition-all"
+                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-600 hover:from-emerald-700 hover:to-sky-750 text-white font-semibold py-2.5 rounded-xl transition-all shadow-md"
                 >
                   Generate Handheld Security Gatepass
                 </button>
@@ -1249,9 +1249,9 @@ export const SuperServicesView: React.FC<SuperServicesViewProps> = ({
                     <div className="font-semibold text-slate-800 text-[11px] leading-tight">{generatedVisitorPass.property}</div>
                   </div>
 
-                  <div className="bg-slate-900 rounded-xl p-3 text-center text-white space-y-1">
-                    <span className="text-[9px] text-slate-400 uppercase font-mono block">Security Passcode Pin</span>
-                    <span className="text-xl font-extrabold text-emerald-400 font-mono letter-spacing-2 tracking-widest">{generatedVisitorPass.passcode}</span>
+                  <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-3 text-center text-white space-y-1 shadow-md">
+                    <span className="text-[9px] text-white/70 uppercase font-mono block">Security Passcode Pin</span>
+                    <span className="text-xl font-extrabold text-white font-mono letter-spacing-2 tracking-widest">{generatedVisitorPass.passcode}</span>
                   </div>
 
                   <div className="text-[9px] text-slate-450 leading-relaxed text-center">

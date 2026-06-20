@@ -8,8 +8,11 @@ import { Property, Appointment } from '../types';
 import { 
   ArrowLeft, Calendar, Clock, DollarSign, Calculator, 
   MapPin, Check, Phone, Mail, MessageSquare, AlertCircle, Sparkles, Heart,
-  Building, ShieldCheck, X, TrendingUp, TrendingDown, Info, Percent, LineChart as LucideLineChart
+  Building, ShieldCheck, X, TrendingUp, TrendingDown, Info, Percent, LineChart as LucideLineChart,
+  Compass
 } from 'lucide-react';
+
+import { NearbyInfrastructureModal } from './NearbyInfrastructureModal';
 
 import {
   ResponsiveContainer,
@@ -50,6 +53,9 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
 
   // Image slider active index
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Show Nearby Infrastructure Atlas
+  const [showNearbyModal, setShowNearbyModal] = useState<boolean>(false);
 
   // EMI Calculator State parameters
   const [loanVal, setLoanVal] = useState<number>(Math.round(property.price * 0.8));
@@ -311,9 +317,20 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
               {property.title}
             </h1>
 
-            <p className="flex items-center text-sm md:text-base text-neutral-500 gap-1">
-              <MapPin className="w-4 h-4 text-rose-500" /> {property.location}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-1.5">
+              <p className="flex items-center text-sm md:text-base text-neutral-500 gap-1">
+                <MapPin className="w-4 h-4 text-rose-500" /> {property.location}
+              </p>
+              <button
+                type="button"
+                id="view-nearby-map-btn"
+                onClick={() => setShowNearbyModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-700 hover:to-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer select-none self-start sm:self-auto hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Compass className="w-4 h-4 text-emerald-100 animate-spin-slow" />
+                <span>Explore Nearby Hubs (Schools, Hospitals)</span>
+              </button>
+            </div>
           </div>
 
           {/* Luxury Metric Badges Bar */}
@@ -1651,6 +1668,13 @@ export const PropertyDetailsView: React.FC<PropertyDetailsViewProps> = ({
           </div>
         </button>
       </div>
+
+      {/* Interactive Infrastructure Map overlay portal */}
+      <NearbyInfrastructureModal
+        property={property}
+        isOpen={showNearbyModal}
+        onClose={() => setShowNearbyModal(false)}
+      />
     </div>
   );
 };

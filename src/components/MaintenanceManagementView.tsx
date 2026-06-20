@@ -1079,7 +1079,7 @@ export function MaintenanceManagementView() {
 
               {/* UPI Sim Modal HUD */}
               {showUPISimulator && selectedBillForUPI && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-slate-800/35 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
                   <div className="bg-white text-slate-800 p-6 rounded-3xl w-full max-w-sm space-y-6 text-center shadow-2xl relative">
                     <div className="flex justify-between items-center pb-2 border-b">
                       <p className="font-mono text-[10px] tracking-wider text-slate-500">BHIM UPI • CREDIT Secure</p>
@@ -1726,8 +1726,8 @@ export function MaintenanceManagementView() {
           {/* CATEGORY 9: REPORTS AUDITING */}
           {activeTab === 'reports' && (
             <div className="space-y-6 animate-scale-in">
-              <div className="bg-slate-950 text-white rounded-3xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-1.5 font-mono text-[9px] text-white/35 bg-white/10 rounded-bl">OurHome Audit System</div>
+              <div className="bg-gradient-to-tr from-emerald-800 via-teal-700 to-sky-700 text-white rounded-3xl p-6 relative overflow-hidden shadow-xl border border-emerald-500/20">
+                <div className="absolute top-0 right-0 p-1.5 font-mono text-[9px] text-white/40 bg-white/10 rounded-bl">OurHome Audit System</div>
                 <h3 className="font-display font-black text-lg tracking-snug">RERA Legal Compliance Balance Sheet</h3>
                 <p className="text-[11px] text-slate-400 mt-1 leading-normal">Society maintenance funds are tracked securely within synchronized escrow nodes</p>
 
@@ -1824,7 +1824,7 @@ export function MaintenanceManagementView() {
                   <button
                     type="button"
                     onClick={() => handleMarketplaceBook('Water Tanker')}
-                    className="w-full bg-slate-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-bold py-2 rounded-xl text-center hover:bg-slate-850 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-700 hover:to-teal-750 text-white text-xs font-extrabold py-2 px-4 rounded-xl text-center flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-98"
                   >
                     ⚡ Pre-book Tanker now
                   </button>
