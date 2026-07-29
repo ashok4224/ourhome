@@ -1,0 +1,39 @@
+{
+  "messages": [
+    {
+      "id": "m1",
+      "propertyId": "prop-1",
+      "sender": "builder",
+      "senderName": "Arjun Nandan",
+      "text": "Hello! Welcome to the premium listing of Gachibowli Sky Penthouse. How may I assist your custom queries today?",
+      "timestamp": 1785106389921
+    },
+    {
+      "id": "msg-pzrdz9w7i",
+      "propertyId": "prop-test-smoke",
+      "sender": "customer",
+      "senderName": "Automated Tester",
+      "text": "Automated live SSE message verification...",
+      "timestamp": 1785222133756
+    },
+    {
+      "id": "msg-fl2xh2wpq",
+      "propertyId": "prop-test-smoke",
+      "sender": "customer",
+      "senderName": "Automated Tester",
+      "text": "Automated live SSE message verification...",
+      "timestamp": 1785223376969
+    }
+  ],
+  "invitations": [
+    {
+      "id": "inv-gr0ee5qj8",
+      "propertyId": "prop-test-smoke",
+      "propertyTitle": "Smoke Test Sky Suite",
+      "customerName": "Automated Tester",
+      "customerEmail": "tester@ourhome.in",
+      "timestamp": 1785222133746,
+      "active": true
+    }
+  ]
+}

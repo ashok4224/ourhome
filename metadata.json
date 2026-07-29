@@ -1,0 +1,6 @@
+{
+  "name": "OurHome",
+  "description": "A premium real estate portal for buying, renting, renting services, interactive map listings, properties detail, and dynamic analytics dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

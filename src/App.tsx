@@ -1,0 +1,1008 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect, useTransition } from 'react';
+import { loadData, saveData } from './data';
+import { Property, Appointment, Inquiry, SupportRequest, ChatMessage, ChatInvitation, TypingState } from './types';
+import { LandingPageView } from './components/LandingPageView';
+import { PropertyDetailsView } from './components/PropertyDetailsView';
+import { ListingsPageView } from './components/ListingsPageView';
+import { BuilderPortalView } from './components/BuilderPortalView';
+import { LiveChatDrawer } from './components/LiveChatDrawer';
+import { SuperServicesView } from './components/SuperServicesView';
+import { SmartDeciderView } from './components/SmartDeciderView';
+import { CustomerDashboardView } from './components/CustomerDashboardView';
+import { AdminPortalView } from './components/AdminPortalView';
+import { LoginPage } from './components/LoginPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import {
+  Building2, Sliders, Bell, User, Clock, Heart, ShieldAlert,
+  Menu, X, Sparkles, LayoutDashboard, Compass, Layers, CheckCircle2, ChevronDown,
+  MessageSquare, CheckSquare, PlusCircle
+} from 'lucide-react';
+
+// Auth user type matching server response
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'customer' | 'builder' | 'admin';
+  avatar: string;
+}
+
+export default function App() {
+  const [, startTransition] = useTransition();
+
+  // ── Authentication State ───────────────────────────────────────────
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Core Persistent States — hydrated from the API once authenticated (see effect below).
+  // NOTE: all hooks in this component must be declared unconditionally, before any
+  // early return for the logged-out state, or React throws a hooks-order error the
+  // moment a user logs in (fewer hooks were called on the "show login page" render).
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Cosmetic system telemetry log — not backed by the database, stays in localStorage.
+  const [eventLogs, setEventLogs] = useState<string[]>(() =>
+    loadData('oh_event_logs', [
+      'System initiated on Cloud Run container.',
+      'RERA housing state registry loaded (Hyderabad district).',
+      'Secure connection synchronized with local indexed database.',
+    ])
+  );
+
+  // Router States
+  const [activeTab, setActiveTabState] = useState<string>('landing'); // 'landing', 'listings', 'dashboard', 'admin'
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+
+  // Custom Filters pre-passed to Listings page for quick searching
+  const [listingsPreFilters, setListingsPreFilters] = useState<{ type?: 'Rent' | 'Buy'; search?: string; subLocality?: string } | undefined>(undefined);
+
+  // Real-Time Chat System States
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInvitations, setChatInvitations] = useState<ChatInvitation[]>([]);
+  const [chatTypingStates, setChatTypingStates] = useState<TypingState[]>([]);
+  const [activeChatPropertyId, setActiveChatPropertyId] = useState<string | null>(null);
+  const [activeChatPropertyTitle, setActiveChatPropertyTitle] = useState<string>('');
+  const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
+
+  // UI Interactive States
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(2);
+  const [profileDropdown, setProfileDropdown] = useState(false);
+
+  // Dynamic Premium Toast State
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
+
+  const triggerToast = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  // Log system telemetry events helper
+  const addTelemetryLog = (msg: string) => {
+    const stamp = new Date().toLocaleTimeString();
+    setEventLogs((prev) => [`[${stamp}] ${msg}`, ...prev.slice(0, 40)]);
+  };
+
+  // Check session on mount
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.user) setAuthUser(data.user);
+      })
+      .catch(() => {})
+      .finally(() => setAuthLoading(false));
+  }, []);
+
+  // Hydrate core app data from the API once logged in.
+  useEffect(() => {
+    if (!authUser) return;
+    let cancelled = false;
+
+    (async () => {
+      setDataLoading(true);
+      try {
+        const [propsRes, apptsRes, inqRes, favRes, supportRes] = await Promise.all([
+          fetch('/api/properties'),
+          fetch('/api/appointments'),
+          fetch('/api/inquiries'),
+          fetch('/api/favorites'),
+          authUser.role === 'admin' ? fetch('/api/support-requests') : Promise.resolve(null),
+        ]);
+        if (cancelled) return;
+
+        if (propsRes.ok) setProperties(await propsRes.json());
+        if (apptsRes.ok) setAppointments(await apptsRes.json());
+        if (inqRes.ok) setInquiries(await inqRes.json());
+        if (favRes.ok) setSavedIds(await favRes.json());
+        if (supportRes && supportRes.ok) setSupportRequests(await supportRes.json());
+      } catch (e) {
+        console.error('Failed to load app data', e);
+        if (!cancelled) triggerToast('Failed to load some app data. Please refresh.', 'error');
+      } finally {
+        if (!cancelled) setDataLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [authUser]);
+
+  useEffect(() => {
+    saveData('oh_event_logs', eventLogs);
+  }, [eventLogs]);
+
+  // Real-Time SSE listener connecting to full-stack Express engine
+  useEffect(() => {
+    if (!authUser) return;
+    console.log("Establishing Real-Time Server SSE channel...");
+    const eventSource = new EventSource('/api/chat/stream');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'sync') {
+          setChatMessages(data.messages || []);
+          setChatInvitations(data.invitations || []);
+          setChatTypingStates(data.typingStates || []);
+        } else if (data.type === 'msg') {
+          setChatMessages((prev) => {
+            if (prev.some(m => m.id === data.message.id)) return prev;
+            return [...prev, data.message];
+          });
+        } else if (data.type === 'typing_sync') {
+          setChatTypingStates(data.typingStates || []);
+        } else if (data.type === 'invite') {
+          setChatInvitations((prev) => {
+            if (prev.some(i => i.id === data.invitation.id)) return prev;
+            return [...prev, data.invitation];
+          });
+          // Alert user or sync telemetry
+          addTelemetryLog(`[Real-Time Event] Online live inquiry room request registered for "${data.invitation.propertyTitle}" by ${data.invitation.customerName}.`);
+        }
+      } catch (err) {
+        console.error("Failed to parse SSE event payload:", err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.warn("Realtime EventSource channel reconnecting...", err);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [authUser]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    setAuthUser(null);
+    setProperties([]);
+    setAppointments([]);
+    setInquiries([]);
+    setSupportRequests([]);
+    setSavedIds([]);
+    setDataLoading(true);
+  };
+
+  const handleStartLiveChat = async (propertyId: string, propertyTitle: string) => {
+    if (!authUser) return;
+    try {
+      const customerName = authUser.name;
+      const customerEmail = authUser.email;
+
+      const res = await fetch('/api/chat/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId,
+          propertyTitle,
+          customerName,
+          customerEmail,
+        }),
+      });
+
+      if (res.ok) {
+        setActiveChatPropertyId(propertyId);
+        setActiveChatPropertyTitle(propertyTitle);
+        setIsChatBoxOpen(true);
+        addTelemetryLog(`Connect with Builder: Initiated real-time live chat consultation on "${propertyTitle}".`);
+      }
+    } catch (e) {
+      console.error('Error starting live chat:', e);
+    }
+  };
+
+  const handleOpenBuilderChat = (propertyId: string, propertyTitle: string) => {
+    setActiveChatPropertyId(propertyId);
+    setActiveChatPropertyTitle(propertyTitle);
+    setIsChatBoxOpen(true);
+    addTelemetryLog(`Builder Live Consultation Room: Joined active client chat room for "${propertyTitle}"`);
+  };
+
+  const handleSendMessage = async (text: string, attachment?: { name: string; type: 'image' | 'document'; url: string }) => {
+    if (!activeChatPropertyId || !authUser) return;
+    try {
+      const senderName = authUser.name;
+
+      await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: activeChatPropertyId,
+          sender: authUser.role === 'customer' ? 'customer' : 'builder',
+          senderName,
+          text,
+          attachment
+        }),
+      });
+    } catch (e) {
+      console.error('Error sending message:', e);
+    }
+  };
+
+  const handleSendTyping = async (isTyping: boolean) => {
+    if (!activeChatPropertyId || !authUser) return;
+    try {
+      await fetch('/api/chat/typing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: activeChatPropertyId,
+          role: authUser.role === 'customer' ? 'customer' : 'builder',
+          isTyping,
+        }),
+      });
+    } catch (e) {
+      console.warn('Typing state sync warning:', e);
+    }
+  };
+
+  const setActiveTab = (tab: string) => {
+    startTransition(() => {
+      setActiveTabState(tab);
+    });
+  };
+
+  // State Event handlers
+  const handleToggleSaveProperty = async (id: string) => {
+    const wasSaved = savedIds.includes(id);
+    const propName = properties.find((p) => p.id === id)?.title || 'Property';
+    try {
+      if (wasSaved) {
+        const res = await fetch(`/api/favorites/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to remove favorite');
+        setSavedIds((prev) => prev.filter((item) => item !== id));
+        addTelemetryLog(`Unfocused property: "${propName}" removed from favorites.`);
+      } else {
+        const res = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ propertyId: id }),
+        });
+        if (!res.ok) throw new Error('Failed to save favorite');
+        setSavedIds((prev) => [...prev, id]);
+        addTelemetryLog(`Bookmarked property: "${propName}" saved in user favorites.`);
+      }
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not update favorites. Please try again.', 'error');
+    }
+  };
+
+  const handleSelectProperty = (property: Property) => {
+    setSelectedProperty(property);
+    addTelemetryLog(`Browsed details: Opened full profile page for "${property.title}".`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Record the view server-side; reconcile local state once it resolves.
+    fetch(`/api/properties/${property.id}/view`, { method: 'POST' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((updated: Property | null) => {
+        if (!updated) return;
+        setProperties((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        setSelectedProperty((prev) => (prev && prev.id === updated.id ? updated : prev));
+      })
+      .catch((e) => console.error('Failed to record property view', e));
+  };
+
+  const handleBookSiteVisit = async (appt: Omit<Appointment, 'id' | 'status'>) => {
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appt),
+      });
+      if (!res.ok) throw new Error('Failed to book appointment');
+      const newAppt: Appointment = await res.json();
+      setAppointments((prev) => [newAppt, ...prev]);
+      setUnreadNotificationCount((prev) => prev + 1);
+      addTelemetryLog(`Registered Appointment: ${appt.customerName} scheduled a visit for "${appt.propertyTitle}" on ${appt.date}.`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not book the appointment. Please try again.', 'error');
+    }
+  };
+
+  const handleAddPropertySubmit = async (newProp: Omit<Property, 'id' | 'views' | 'inquiries' | 'status'>) => {
+    try {
+      const res = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProp),
+      });
+      if (!res.ok) throw new Error('Failed to add property');
+      const freshProperty: Property = await res.json();
+      setProperties((prev) => [freshProperty, ...prev]);
+      addTelemetryLog(`Listed New Property: "${freshProperty.title}" successfully added by ${authUser?.name ?? 'a builder'}.`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not add the property listing. Please try again.', 'error');
+    }
+  };
+
+  const handleRemoveProperty = async (id: string) => {
+    const titleToRemove = properties.find((p) => p.id === id)?.title || id;
+    try {
+      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to remove property');
+      setProperties((prev) => prev.filter((p) => p.id !== id));
+      addTelemetryLog(`Withdrew listing: Removed "${titleToRemove}" from portfolio database references.`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not remove the property. Please try again.', 'error');
+    }
+  };
+
+  const handleAddInquiry = async (inq: Omit<Inquiry, 'id' | 'status' | 'date'>) => {
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inq),
+      });
+      if (!res.ok) throw new Error('Failed to submit inquiry');
+      const newInq: Inquiry = await res.json();
+      setInquiries((prev) => [newInq, ...prev]);
+      // Optimistic local bump; the server's derived count is the source of truth on next reload.
+      setProperties((pList) => pList.map((p) => p.id === inq.propertyId ? { ...p, inquiries: p.inquiries + 1 } : p));
+      addTelemetryLog(`Registered Inquiry: ${inq.customerName} sent an inquiry for "${inq.propertyTitle}".`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not submit the inquiry. Please try again.', 'error');
+    }
+  };
+
+  const handleRemoveInquiry = async (id: string) => {
+    const targetInq = inquiries.find((i) => i.id === id);
+    try {
+      const res = await fetch(`/api/inquiries/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to withdraw inquiry');
+      if (targetInq) {
+        setProperties((pList) => pList.map((p) => p.id === targetInq.propertyId ? { ...p, inquiries: Math.max(0, p.inquiries - 1) } : p));
+      }
+      setInquiries((prev) => prev.filter((i) => i.id !== id));
+      addTelemetryLog(`Withdrew Inquiry: Inquiry folder #${id.toUpperCase()} removed from registry.`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not withdraw the inquiry. Please try again.', 'error');
+    }
+  };
+
+  const handleUpdateInquiryStatus = async (id: string, newStatus: Inquiry['status']) => {
+    try {
+      const res = await fetch(`/api/inquiries/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Failed to update inquiry status');
+      setInquiries((prev) => prev.map((i) => i.id === id ? { ...i, status: newStatus } : i));
+      addTelemetryLog(`Milestone Update: Inquiry #${id.toUpperCase()} marked as "${newStatus}".`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not update the inquiry status. Please try again.', 'error');
+    }
+  };
+
+  const handleApproveProperty = async (id: string) => {
+    const pTitle = properties.find((p) => p.id === id)?.title || id;
+    try {
+      const res = await fetch(`/api/properties/${id}/approve`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to approve property');
+      setProperties((prev) => prev.map((p) => p.id === id ? { ...p, status: 'Approved' } : p));
+      addTelemetryLog(`Admin Verified Approved: Checked RERA certificates and set "${pTitle}" to active, broadcast public.`);
+      triggerToast(`Property "${pTitle}" has been verified, approved, and publicized!`, 'success');
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not approve the property. Please try again.', 'error');
+    }
+  };
+
+  const handleRejectProperty = async (id: string) => {
+    const pTitle = properties.find((p) => p.id === id)?.title || id;
+    try {
+      const res = await fetch(`/api/properties/${id}/reject`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to reject property');
+      setProperties((prev) => prev.map((p) => p.id === id ? { ...p, status: 'Rejected' } : p));
+      addTelemetryLog(`Admin Flag Reject: Suspended deed validation audit on "${pTitle}" for RERA discrepancy.`);
+      triggerToast(`Deed rejected! Warning telemetry sent back to the builder profile regarding "${pTitle}".`, 'warning');
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not reject the property. Please try again.', 'error');
+    }
+  };
+
+  const handleResolveSupportTicket = async (id: string) => {
+    const sName = supportRequests.find((s) => s.id === id)?.customerName || id;
+    try {
+      const res = await fetch(`/api/support-requests/${id}/resolve`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to resolve support ticket');
+      setSupportRequests((prev) => prev.map((s) => s.id === id ? { ...s, status: 'Resolved' } : s));
+      addTelemetryLog(`Support Ticket Closed: Resolved support queries sent by ${sName}.`);
+    } catch (e) {
+      console.error(e);
+      triggerToast('Could not resolve the ticket. Please try again.', 'error');
+    }
+  };
+
+  const handleSwitchToClientWithFilter = (propertyTitle: string) => {
+    setActiveTabState('listings');
+    setListingsPreFilters({ search: propertyTitle });
+    setSelectedProperty(null);
+    addTelemetryLog(`Preview Action: Swappped view to preview newly listed property "${propertyTitle}" on customer search view.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateToListingsWithFilters = (preFilters?: { type?: 'Rent' | 'Buy'; search?: string; subLocality?: string }) => {
+    setListingsPreFilters(preFilters);
+    setSelectedProperty(null);
+    setActiveTab('listings');
+    addTelemetryLog(`Filtered Query search: Routing to listings page focusing on target criteria.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleQuickTabSelect = (tab: string) => {
+    setSelectedProperty(null);
+    if (tab === 'dashboard') {
+      triggerToast("Welcome to Owner/Builder Desk! Post your Rent or Sale property directly below.", "info");
+      setActiveTab('dashboard');
+    } else if (tab === 'admin') {
+      triggerToast("Welcome to Admin Control Center! Reviewing pending verification requests.", "info");
+      setActiveTab('admin');
+    } else {
+      setActiveTab(tab);
+    }
+
+    setShowMobileMenu(false);
+    addTelemetryLog(`Navigated View: Switched primary tab view to "${tab}" panel.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setListingsPreFilters(undefined);
+  };
+
+  // Sample static notification stack
+  const NOTIFICATIONS_STACK = [
+    { id: 1, title: 'Appointment Booked', text: 'Anil Kumar scheduled Gachibowli Penthouse visit.', time: '11m ago', isNew: true },
+    { id: 2, title: 'Inquiry Received', text: 'Vikram Reddy left pricing logs on Jubilee Hills.', time: '1h ago', isNew: true },
+    { id: 3, title: 'Security Pass Checked', text: 'Arjun Nandan securely synchronized telemetry logs.', time: '2h ago', isNew: false }
+  ];
+
+  // Show login page if not authenticated. All hooks above this point run unconditionally
+  // on every render, regardless of auth state, so this early return is hooks-order-safe.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#e0f2fe] via-white to-[#e8fbf1] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return <LoginPage onLoginSuccess={(user) => setAuthUser(user)} />;
+  }
+
+  // Nav tabs the current account is actually allowed to use — Builder/Admin Desk are
+  // gated server-side by role, so hiding them here avoids sending users into a screen
+  // that will just 403 on every action.
+  const NAV_TABS = [
+    { id: 'landing', label: 'Explore Home', icon: Compass },
+    { id: 'listings', label: 'Buy & Rent', icon: Sliders },
+    { id: 'decider', label: 'Decision Helper 🎯', icon: CheckSquare },
+    { id: 'services', label: 'Super Services ⚡', icon: Sparkles },
+    { id: 'customer-dashboard', label: 'My Inquiries 📑', icon: Clock },
+    ...(authUser.role === 'builder' ? [{ id: 'dashboard', label: 'Builder Desk 🏗️', icon: LayoutDashboard }] : []),
+    ...(authUser.role === 'admin' ? [{ id: 'admin', label: 'Admin Desk 🛡️', icon: ShieldAlert }] : []),
+  ];
+
+  return (
+    <div id="ourhome-app-shell" className="min-h-screen bg-gradient-to-br from-[#e0f2fe] via-white to-[#e8fbf1] flex flex-col font-sans select-none antialiased">
+
+      {/* Dynamic Nav Header Bar */}
+      <header id="app-nav-header" className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+
+            {/* Logo */}
+            <div
+              id="ourhome-logo-box"
+              onClick={() => handleQuickTabSelect('landing')}
+              className="flex items-center gap-2.5 cursor-pointer group select-none"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-sky-500 text-white flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-emerald-600/10 group-hover:scale-105 ring-2 ring-emerald-100 group-hover:ring-emerald-400/20">
+                <Building2 className="w-5.5 h-5.5 transition-transform duration-500 group-hover:rotate-6 group-hover:scale-110" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-display font-black text-xl tracking-tight leading-none text-slate-900 flex items-center gap-1 transition-colors group-hover:text-emerald-700">
+                  Our<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-600 font-extrabold">Home</span>
+                  <span className="inline-block w-1.5 h-1.5 bg-sky-500 rounded-full animate-pulse self-start mt-0.5"></span>
+                </span>
+                <span className="text-[9px] font-mono tracking-widest text-[#059669] font-extrabold uppercase leading-none mt-1">
+                  Hyderabad Portal
+                </span>
+              </div>
+            </div>
+
+             {/* Desktop Navigation Links (Unified single Client App with all workspace portals) */}
+            <nav id="desktop-nav" className="hidden lg:flex items-center gap-1.5">
+              {NAV_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isSelected = activeTab === tab.id && !selectedProperty;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleQuickTabSelect(tab.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-tight transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-md shadow-emerald-650/15 scale-102'
+                        : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/80'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Practical Top-Right Interactive Utilities */}
+            <div id="nav-utilities" className="flex items-center gap-3">
+
+              {/* Dynamic Notification Hub */}
+              <div className="relative">
+                <button
+                  id="notif-bell-btn"
+                  type="button"
+                  onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    setUnreadNotificationCount(0);
+                    setProfileDropdown(false);
+                  }}
+                  className={`p-2 rounded-xl border transition-all relative cursor-pointer ${
+                    showNotifications
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
+                  }`}
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadNotificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-mono text-[9px] font-bold flex items-center justify-center border-2 border-white animate-bounce">
+                      {unreadNotificationCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown HUD overlay */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2.5 w-80 bg-white text-slate-800 border border-slate-200 rounded-2xl shadow-xl p-4 space-y-3 z-50 animate-scale-in">
+                    <div className="flex justify-between items-center border-b border-slate-100 pb-2 text-xs">
+                      <span className="font-mono text-[10px] text-slate-500 font-bold uppercase tracking-wider">System Alerts Registry</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowNotifications(false)}
+                        className="text-slate-400 hover:text-slate-800"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="divide-y divide-slate-100 text-xs">
+                      {NOTIFICATIONS_STACK.map((notif) => (
+                        <div key={notif.id} className="py-2.5 space-y-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className={`font-semibold ${notif.isNew ? 'text-emerald-600' : 'text-slate-700'}`}>
+                              {notif.title}
+                            </h4>
+                            <span className="text-[9px] font-mono text-slate-400">{notif.time}</span>
+                          </div>
+                          <p className="text-slate-500 leading-relaxed text-[11px]">{notif.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowNotifications(false)}
+                      className="w-full bg-slate-50 py-1.5 text-center text-[10px] font-mono text-slate-600 hover:text-slate-900 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                    >
+                      Dismiss Window
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Saved Properties count tag */}
+              <button
+                type="button"
+                onClick={() => handleQuickTabSelect('listings')}
+                className="hidden md:flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-100 py-1.5 px-3 rounded-xl text-xs font-semibold shadow-xs"
+                title="View saved properties"
+              >
+                <Heart className="w-3.5 h-3.5 fill-current" />
+                <span>Saved ({savedIds.length})</span>
+              </button>
+
+              {/* Post Your Property helper badge */}
+              {authUser.role === 'builder' && (
+                <button
+                  type="button"
+                  onClick={() => handleQuickTabSelect('dashboard')}
+                  className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:opacity-95 py-1.5 px-3 rounded-xl text-xs font-semibold shadow-xs cursor-pointer transition-all border border-emerald-500/25 shrink-0"
+                  title="List your rent or sale house with zero brokerage fees"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Post Property</span>
+                  <span className="bg-emerald-500 text-[8px] font-bold px-1 py-0.2 rounded-sm text-white shrink-0 font-mono">0% FEE</span>
+                </button>
+              )}
+
+              {/* Mini User Profile dropdown switcher */}
+              <div className="relative">
+                <button
+                  id="profile-dropdown-btn"
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdown(!profileDropdown);
+                    setShowNotifications(false);
+                  }}
+                  className="flex items-center gap-1.5 p-1 bg-emerald-50 text-emerald-800 rounded-full hover:bg-emerald-100 border border-emerald-200 cursor-pointer transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
+                    <img
+                      src={authUser.avatar}
+                      alt="User profile"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-emerald-600 mr-1.5 hidden sm:block" />
+                </button>
+
+                {profileDropdown && (
+                  <div className="absolute right-0 mt-2.5 w-52 bg-white text-slate-800 border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-scale-in">
+                    <div className="px-3.5 py-1.5 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900">{authUser.name}</p>
+                      <p className="text-[9px] font-mono text-slate-400">{authUser.email}</p>
+                      <span className="inline-block mt-1 text-[8px] font-bold font-mono bg-emerald-50 border border-emerald-100 text-emerald-700 py-0.5 px-1.5 rounded-sm uppercase">{authUser.role.toUpperCase()}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdown(false);
+                        handleQuickTabSelect('listings');
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                    >
+                      <span>Explore Buy & Rent</span>
+                      <span className="text-[8px] px-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm font-mono uppercase">Go</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdown(false);
+                        handleQuickTabSelect('customer-dashboard');
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                    >
+                      <span>My Inquiries Tracker</span>
+                      <span className="text-[8px] px-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-sm font-mono uppercase">New</span>
+                    </button>
+                    {authUser.role === 'builder' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileDropdown(false);
+                          handleQuickTabSelect('dashboard');
+                        }}
+                        className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                      >
+                        <span>Post / Edit Listings</span>
+                        <span className="text-[8px] px-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-sm font-mono uppercase font-bold">Go</span>
+                      </button>
+                    )}
+
+                    {authUser.role === 'admin' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileDropdown(false);
+                          handleQuickTabSelect('admin');
+                        }}
+                        className="w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 text-slate-700 hover:text-slate-900 flex items-center justify-between"
+                      >
+                        <span>Admin Control Center</span>
+                        <span className="text-[8px] px-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-sm font-mono uppercase font-bold">Root</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileDropdown(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-left px-3.5 py-2 text-xs text-rose-600 hover:bg-rose-50 border-t border-slate-100 mt-1"
+                    >
+                      Log out Profile
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile menu trigger */}
+              <button
+                id="mobile-menu-trigger"
+                type="button"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="lg:hidden p-2 rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50 cursor-pointer"
+              >
+                {showMobileMenu ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+
+        {/* Mobile menu panel dropdown */}
+        {showMobileMenu && (
+          <div className="lg:hidden border-b border-slate-200 bg-white/95 px-4 py-4 space-y-2 relative z-40 transition-all">
+            {NAV_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleQuickTabSelect(tab.id)}
+                className={`w-full text-left py-2 px-3 rounded-lg text-xs font-semibold ${
+                  activeTab === tab.id && !selectedProperty
+                    ? 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-100/80'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-neutral-100 pt-3 flex items-center justify-between">
+              <span className="text-[10px] font-mono text-rose-500 font-bold uppercase">Saved ({savedIds.length}) Elements</span>
+              <button
+                type="button"
+                onClick={() => handleQuickTabSelect('listings')}
+                className="text-xs text-emerald-600 font-bold underline"
+              >
+                Explore Bookmarks List
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Main Layout containing routed components */}
+      <main id="app-main-canvas" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ErrorBoundary fallbackTitle="Page Error" onNavigateHome={() => handleQuickTabSelect('landing')}>
+        {dataLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 animate-pulse" />
+          </div>
+        ) : selectedProperty ? (
+          /* Detail view override takes precedence - allows immersive modular routing flow */
+          <PropertyDetailsView
+            property={selectedProperty}
+            onBack={() => {
+              setSelectedProperty(null);
+              addTelemetryLog("Withdrew inspected profile. Returned back to listings index.");
+            }}
+            onBookAppointment={handleBookSiteVisit}
+            savedIds={savedIds}
+            onToggleSave={handleToggleSaveProperty}
+            onStartLiveChat={handleStartLiveChat}
+            onAddInquiry={handleAddInquiry}
+          />
+        ) : (
+          /* Normal Tab routers */
+          <>
+            {activeTab === 'landing' && (
+              <LandingPageView
+                properties={properties}
+                onSelectProperty={handleSelectProperty}
+                onNavigateToListings={handleNavigateToListingsWithFilters}
+                onNavigateToTab={handleQuickTabSelect}
+                savedIds={savedIds}
+                onToggleSave={handleToggleSaveProperty}
+              />
+            )}
+
+            {activeTab === 'listings' && (
+              <ListingsPageView
+                properties={properties}
+                onSelectProperty={handleSelectProperty}
+                initialFilters={listingsPreFilters}
+                savedIds={savedIds}
+                onToggleSave={handleToggleSaveProperty}
+              />
+            )}
+
+            {activeTab === 'services' && (
+              <SuperServicesView
+                properties={properties}
+                onNavigateToListings={handleNavigateToListingsWithFilters}
+                onSelectProperty={handleSelectProperty}
+                savedIds={savedIds}
+              />
+            )}
+
+            {activeTab === 'decider' && (
+              <SmartDeciderView
+                properties={properties}
+                onSelectProperty={handleSelectProperty}
+                onNavigateToListings={handleNavigateToListingsWithFilters}
+              />
+            )}
+
+            {activeTab === 'customer-dashboard' && (
+              <CustomerDashboardView
+                inquiries={inquiries}
+                properties={properties}
+                onAddInquiry={handleAddInquiry}
+                onRemoveInquiry={handleRemoveInquiry}
+                onUpdateInquiryStatus={handleUpdateInquiryStatus}
+                onSelectProperty={handleSelectProperty}
+                triggerToast={triggerToast}
+              />
+            )}
+
+            {activeTab === 'dashboard' && authUser.role === 'builder' && (
+              <BuilderPortalView
+                properties={properties}
+                appointments={appointments}
+                inquiries={inquiries}
+                onAddProperty={handleAddPropertySubmit}
+                onRemoveProperty={handleRemoveProperty}
+                chatInvitations={chatInvitations}
+                chatMessages={chatMessages}
+                chatTypingStates={chatTypingStates}
+                onOpenChat={handleOpenBuilderChat}
+                onSwitchToClientWithFilter={handleSwitchToClientWithFilter}
+              />
+            )}
+
+            {activeTab === 'admin' && authUser.role === 'admin' && (
+              <AdminPortalView
+                properties={properties}
+                supportRequests={supportRequests}
+                onApproveProperty={handleApproveProperty}
+                onRejectProperty={handleRejectProperty}
+                onResolveSupport={handleResolveSupportTicket}
+                eventLogs={eventLogs}
+              />
+            )}
+          </>
+        )}
+        </ErrorBoundary>
+      </main>
+
+      {/* Elegant minimalist footer */}
+      <footer id="app-nav-footer" className="bg-slate-100 border-t border-slate-200 text-slate-500 py-10 px-6 font-mono text-[11px] text-center mt-auto">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <div className="flex justify-center items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-600 to-sky-500 text-white flex items-center justify-center shadow-xs">
+              <Building2 className="w-3.5 h-3.5" />
+            </div>
+            <span className="font-display font-extrabold text-sm text-slate-900 tracking-tight">
+              Our<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-sky-600">Home</span>
+            </span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-700 font-bold text-[10px] tracking-tight">Estates &bull; Condos &bull; Penthouses</span>
+          </div>
+          <p className="max-w-md mx-auto leading-relaxed text-slate-500 text-[10px]">
+            In strict compliance with TS-RERA (Telangana Real Estate Regulatory Authority) protocols. Secured escrow services engineered with dual key cryptographic certificates.
+          </p>
+          <p className="text-slate-400 text-[9px] pt-2 border-t border-slate-200">
+            &copy; {new Date().getFullYear()} OurHome Hyderabad Dev. All rights reserved. Built client-side with React &amp; Tailwind.
+          </p>
+        </div>
+      </footer>
+
+      {/* Render the unified instant real-time chat cabinet component */}
+      <LiveChatDrawer
+        isOpen={isChatBoxOpen}
+        onClose={() => {
+          setIsChatBoxOpen(false);
+          setActiveChatPropertyId(null);
+        }}
+        currentUserRole={authUser.role === 'customer' ? 'customer' : 'builder'}
+        currentUserName={authUser.name}
+        propertyId={activeChatPropertyId || ''}
+        propertyTitle={activeChatPropertyTitle}
+        messages={chatMessages}
+        typingStates={chatTypingStates}
+        onSendMessage={handleSendMessage}
+        onSendTyping={handleSendTyping}
+      />
+
+      {/* Floating high-fidelity premium Toast notifications panel */}
+      {toasts.length > 0 && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-20 right-4 sm:right-6 z-[9999] w-full max-w-sm pointer-events-none flex flex-col gap-2.5 px-4 animate-fade-in"
+        >
+          {toasts.map((toast) => {
+            const isSuccess = toast.type === 'success';
+            const isError = toast.type === 'error';
+            const isWarning = toast.type === 'warning';
+
+            return (
+              <div
+                key={toast.id}
+                className="pointer-events-auto bg-slate-900/95 text-white border border-slate-800 backdrop-blur-md rounded-2xl p-4 shadow-2xl flex gap-3 items-start transition-all duration-300 max-w-full"
+                style={{
+                  boxShadow: '0 12px 32px -4px rgba(16, 185, 129, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <div className={`p-1.5 rounded-lg shrink-0 ${
+                  isSuccess ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                  isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                  isWarning ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                  'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                }`}>
+                  {isSuccess && <CheckCircle2 className="w-4 h-4" />}
+                  {isError && <ShieldAlert className="w-4 h-4" />}
+                  {isWarning && <ShieldAlert className="w-4 h-4" />}
+                  {toast.type === 'info' && <Sparkles className="w-4 h-4" />}
+                </div>
+
+                <div className="flex-1 space-y-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-slate-400">
+                    {toast.type === 'success' ? 'Task Finalized' : toast.type === 'error' ? 'Security Alert' : 'System Information'}
+                  </span>
+                  <p className="text-xs font-semibold text-slate-100 leading-normal">{toast.message}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+                  className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+    </div>
+  );
+}

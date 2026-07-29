@@ -1,0 +1,134 @@
+x-service-env: &service-env
+  DATABASE_URL: postgresql://ourhome:ourhome@postgres:5432/ourhome
+  JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+  NODE_ENV: production
+  LOG_LEVEL: info
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ourhome-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ourhome
+      POSTGRES_PASSWORD: ourhome
+      POSTGRES_DB: ourhome
+    ports:
+      - "5432:5432"
+    volumes:
+      - ourhome-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ourhome"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  properties-service:
+    build:
+      context: .
+      dockerfile: services/properties-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+      INQUIRIES_SERVICE_URL: http://inquiries-service:4004
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  appointments-service:
+    build:
+      context: .
+      dockerfile: services/appointments-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inquiries-service:
+    build:
+      context: .
+      dockerfile: services/inquiries-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  favorites-service:
+    build:
+      context: .
+      dockerfile: services/favorites-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  support-service:
+    build:
+      context: .
+      dockerfile: services/support-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  chat-service:
+    build:
+      context: .
+      dockerfile: services/chat-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *service-env
+      APP_URL: ${APP_URL:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      AUTH_SERVICE_URL: http://auth-service:4001
+      PROPERTIES_SERVICE_URL: http://properties-service:4002
+      APPOINTMENTS_SERVICE_URL: http://appointments-service:4003
+      INQUIRIES_SERVICE_URL: http://inquiries-service:4004
+      FAVORITES_SERVICE_URL: http://favorites-service:4005
+      SUPPORT_SERVICE_URL: http://support-service:4006
+      CHAT_SERVICE_URL: http://chat-service:4007
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - properties-service
+      - appointments-service
+      - inquiries-service
+      - favorites-service
+      - support-service
+      - chat-service
+
+volumes:
+  ourhome-postgres-data:

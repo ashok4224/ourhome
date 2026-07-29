@@ -1,0 +1,67 @@
+# Baseline single-instance Postgres. For real production use, prefer a
+# managed database (OCI Base Database / Autonomous, RDS, Cloud SQL, etc.) or a
+# proper operator instead of a bare Deployment + PVC — this matches
+# docker-compose.yml for parity only.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: ourhome
+spec:
+  accessModes: ["ReadWriteOnce"]
+  # Explicit rather than relying on the cluster's implicit default — OKE
+  # provisions OCI Block Volume-backed PVCs under this class name.
+  storageClassName: oci-bv
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: ourhome
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "ourhome"
+            - name: POSTGRES_DB
+              value: "ourhome"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: ourhome-secrets, key: POSTGRES_PASSWORD }
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "ourhome"] }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: postgres-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: ourhome
+spec:
+  selector: { app: postgres }
+  ports:
+    - port: 5432
+      targetPort: 5432

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: support-service
+  namespace: ourhome
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: support-service }
+  template:
+    metadata:
+      labels: { app: support-service }
+    spec:
+      containers:
+        - name: support-service
+          image: <OCIR_REGION>.ocir.io/<OCIR_NAMESPACE>/ourhome/support-service:latest
+          ports:
+            - containerPort: 4006
+          envFrom:
+            - configMapRef: { name: ourhome-config }
+            - secretRef: { name: ourhome-secrets }
+          readinessProbe:
+            httpGet: { path: /health, port: 4006 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 4006 }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits: { cpu: "250m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: support-service
+  namespace: ourhome
+spec:
+  selector: { app: support-service }
+  ports:
+    - port: 4006
+      targetPort: 4006

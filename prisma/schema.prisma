@@ -1,0 +1,168 @@
+// OurHome data model. One shared database across all services — see
+// ARCHITECTURE.md for which service owns which model.
+// Mirrors src/types.ts; see services/*/src/routes.ts for how these are exposed over the API.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  customer
+  builder
+  admin
+}
+
+enum RentOrBuy {
+  Rent
+  Buy
+}
+
+// Property/Appointment/Inquiry/SupportRequest status fields are plain strings,
+// not Prisma enums: several valid values contain spaces ("Pending Approval",
+// "Under Review"), which Prisma enum identifiers can't represent. Validity is
+// enforced with Zod at the API boundary (packages/shared/src/validation.ts) instead.
+
+enum ChatSender {
+  customer
+  builder
+}
+
+enum AttachmentType {
+  image
+  document
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         Role
+  passwordHash String
+  avatar       String
+  createdAt    DateTime @default(now())
+
+  appointments Appointment[]
+  inquiries    Inquiry[]
+  savedProperties SavedProperty[]
+}
+
+model Property {
+  id          String         @id @default(cuid())
+  title       String
+  location    String
+  subLocality String
+  price       Int
+  rentOrBuy   RentOrBuy
+  sizeSqFt    Int
+  bedrooms    Int
+  bathrooms   Int
+  facing      String
+  status      String         @default("Pending Approval")
+  amenities   String[]
+  description String         @db.Text
+  images      String[]
+
+  agentName   String
+  agentPhone  String
+  agentEmail  String
+  agentAvatar String
+
+  views    Int      @default(0)
+  featured Boolean  @default(false)
+  tags     String[]
+
+  createdAt DateTime @default(now())
+
+  appointments    Appointment[]
+  inquiries       Inquiry[]
+  savedBy         SavedProperty[]
+}
+
+model Appointment {
+  id            String            @id @default(cuid())
+  propertyId    String
+  property      Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  propertyTitle String
+  customerName  String
+  customerEmail String
+  customerPhone String
+  date          String
+  timeSlot      String
+  status        String            @default("Scheduled")
+  createdAt     DateTime          @default(now())
+
+  @@index([propertyId])
+  @@index([userId])
+}
+
+model Inquiry {
+  id            String        @id @default(cuid())
+  propertyId    String
+  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  propertyTitle String
+  customerName  String
+  customerEmail String
+  customerPhone String
+  message       String        @db.Text
+  date          String
+  status        String        @default("Received")
+  createdAt     DateTime      @default(now())
+
+  @@index([propertyId])
+  @@index([userId])
+}
+
+model SupportRequest {
+  id           String   @id @default(cuid())
+  customerName String
+  email        String
+  message      String   @db.Text
+  date         String
+  status       String   @default("Open")
+  createdAt    DateTime @default(now())
+}
+
+model SavedProperty {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, propertyId])
+}
+
+model ChatMessage {
+  id         String          @id @default(cuid())
+  propertyId String
+  sender     ChatSender
+  senderName String
+  text       String          @db.Text
+  timestamp  BigInt
+  attachmentName String?
+  attachmentType AttachmentType?
+  attachmentUrl  String?
+
+  @@index([propertyId])
+}
+
+model ChatInvitation {
+  id            String   @id @default(cuid())
+  propertyId    String
+  propertyTitle String
+  customerName  String
+  customerEmail String
+  timestamp     BigInt
+  active        Boolean  @default(true)
+
+  @@index([propertyId])
+}

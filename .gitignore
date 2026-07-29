@@ -1,0 +1,20 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Local Claude Code tool settings — machine-local, not shared project config
+.claude/settings.local.json
+
+# Terraform (deploy/oci) — state and vars hold real OCIDs/values, never commit.
+# .terraform.lock.hcl is NOT ignored — it pins provider versions and should be committed.
+deploy/oci/.terraform/
+deploy/oci/terraform.tfstate
+deploy/oci/terraform.tfstate.backup
+deploy/oci/*.tfvars
+!deploy/oci/terraform.tfvars.example
+deploy/oci/crash.log
