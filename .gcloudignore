@@ -12,7 +12,9 @@ k8s/
 .claude/
 .env
 .env.*
-data/
+# Root data/ only — an unanchored `data/` would also exclude src/data/,
+# which the frontend `vite build` needs (see .dockerignore).
+/data/
 .vscode/
 .idea/
 *.log
