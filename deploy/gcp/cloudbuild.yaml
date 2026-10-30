@@ -1,0 +1,50 @@
+# One-shot image build for the FIRST deploy (alternative to GitHub Actions).
+# Builds all 8 services in parallel (x86_64) and pushes to Artifact Registry.
+#
+# Run from the repo root:
+#   gcloud builds submit --config=deploy/gcp/cloudbuild.yaml --region=us-central1 .
+#
+# $PROJECT_ID is a Cloud Build built-in substitution.
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: auth-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/auth-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/auth-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: properties-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/properties-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/properties-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: appointments-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/appointments-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/appointments-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: inquiries-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/inquiries-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/inquiries-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: favorites-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/favorites-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/favorites-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: support-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/support-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/support-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: chat-service
+    waitFor: ['-']
+    args: ['build', '-f', 'services/chat-service/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/chat-service:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    id: gateway
+    waitFor: ['-']
+    args: ['build', '-f', 'services/gateway/Dockerfile', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/gateway:latest', '.']
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/auth-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/properties-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/appointments-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/inquiries-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/favorites-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/support-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/chat-service:latest'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/ourhome/gateway:latest'

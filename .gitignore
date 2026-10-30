@@ -17,4 +17,10 @@ deploy/oci/terraform.tfstate
 deploy/oci/terraform.tfstate.backup
 deploy/oci/*.tfvars
 !deploy/oci/terraform.tfvars.example
+deploy/gcp/.terraform/
+deploy/gcp/terraform.tfstate
+deploy/gcp/terraform.tfstate.backup
+deploy/gcp/*.tfvars
+!deploy/gcp/terraform.tfvars.example
+deploy/gcp/tfplan*
 deploy/oci/crash.log

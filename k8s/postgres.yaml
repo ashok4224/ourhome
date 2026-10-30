@@ -9,9 +9,9 @@ metadata:
   namespace: ourhome
 spec:
   accessModes: ["ReadWriteOnce"]
-  # Explicit rather than relying on the cluster's implicit default — OKE
-  # provisions OCI Block Volume-backed PVCs under this class name.
-  storageClassName: oci-bv
+  # GKE's default storage class ("standard") provisions a GCE persistent disk
+  # (pd-standard) via the GCE Persistent Disk CSI driver.
+  storageClassName: standard
   resources:
     requests:
       storage: 5Gi
@@ -41,6 +41,12 @@ spec:
               value: "ourhome"
             - name: POSTGRES_DB
               value: "ourhome"
+            # GKE's pd-standard PVs are ext4 filesystems whose root already
+            # contains a `lost+found` directory; the postgres image refuses to
+            # initdb on a non-empty data dir. Point PGDATA at a subdirectory
+            # to avoid that (documented postgres-image workaround).
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef: { name: ourhome-secrets, key: POSTGRES_PASSWORD }

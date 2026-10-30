@@ -1,0 +1,75 @@
+name: Deploy to GKE
+
+# CD: after CI pushes fresh images, deploy the manifests to the GKE cluster.
+# Auth uses Workload Identity Federation (no long-lived service-account keys).
+#
+# Required GitHub repository variables (Settings > Secrets and variables > Actions > Variables):
+#   WIF_PROVIDER         = projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/github-actions-pool/providers/github
+#   WIF_SERVICE_ACCOUNT  = github-actions@<PROJECT_ID>.iam.gserviceaccount.com
+#   GKE_CLUSTER          = ourhome-gke
+#   GKE_LOCATION         = us-central1-a
+#
+# Required GitHub repository secrets (Settings > Secrets and variables > Actions > Secrets):
+#   DATABASE_URL, JWT_SECRET, INTERNAL_SERVICE_TOKEN, POSTGRES_PASSWORD
+#
+# See deploy/gcp/README.md for the one-time setup (Terraform + WIF + RBAC).
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build and Push Images"]
+    types: [completed]
+    branches: [main, microservices]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.GKE_CLUSTER }}
+          location: ${{ vars.GKE_LOCATION }}
+
+      - name: Create/update the ourhome-secrets Secret from GitHub Secrets
+        run: |
+          kubectl create secret generic ourhome-secrets -n ourhome \
+            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --from-literal=INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}" \
+            --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy manifests
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/postgres.yaml
+          kubectl apply -f k8s/auth-service.yaml -f k8s/properties-service.yaml \
+                        -f k8s/appointments-service.yaml -f k8s/inquiries-service.yaml \
+                        -f k8s/favorites-service.yaml -f k8s/support-service.yaml \
+                        -f k8s/chat-service.yaml
+          kubectl apply -f k8s/gateway.yaml
+
+      - name: Wait for gateway rollout
+        run: kubectl rollout status deploy/gateway -n ourhome --timeout=300s
+
+      - name: Report gateway address
+        run: |
+          echo "Gateway external address:"
+          kubectl get svc gateway -n ourhome -o jsonpath='{.status.loadBalancer.ingress[0].ip}{"\n"}'

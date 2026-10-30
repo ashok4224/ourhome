@@ -1,0 +1,25 @@
+# Cloud Build source upload ignores. Keeps `gcloud builds submit` fast by
+# excluding everything the Docker build context doesn't need.
+.git/
+.gitignore
+node_modules/
+dist/
+services/*/dist/
+packages/*/dist/
+deploy/
+k8s/
+.github/
+.claude/
+.env
+.env.*
+data/
+.vscode/
+.idea/
+*.log
+scripts/
+*.test.*
+*.spec.*
+nul)
+nul))
+.DS_Store
+Thumbs.db

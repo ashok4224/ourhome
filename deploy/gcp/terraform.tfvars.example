@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars (gitignored) and fill in your real project ID.
+# Find it under the project selector (top) in the GCP Console, or:
+#   gcloud projects list
+
+project_id = "project-3cfee066-7cd7-4c90-baa"
+
+# region      = "us-central1"
+# zone        = "us-central1-a"
+
+# Defaults (machine_type = e2-small, node_count = 1, autoscaling 1-3) target
+# the GKE free tier's single zonal cluster in us-central1. e2-small is a
+# shared-core x86_64 shape — matches the amd64 images the CI pipeline builds.
+# Raise machine_type to e2-medium if the 8 services need more headroom (not
+# free-tier eligible, but covered by the $300 free-trial credit while it lasts).

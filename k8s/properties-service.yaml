@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: properties-service
-          image: <OCIR_REGION>.ocir.io/<OCIR_NAMESPACE>/ourhome/properties-service:latest
+          image: us-central1-docker.pkg.dev/project-3cfee066-7cd7-4c90-baa/ourhome/properties-service:latest
           ports:
             - containerPort: 4002
           envFrom:
